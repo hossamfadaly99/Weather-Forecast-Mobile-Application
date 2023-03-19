@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Weather Forecast Application</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="favorite">Favorite</string>
+    <string name="alerts">Alerts</string>
+    <string name="setting">Setting</string>
+    <string name="open_location"><u>open Location Permission</u></string>
+    <string name="provide_the_location_permission">Provide the location permission</string>
+    <string name="settings">Settings</string>
+    <string name="make_sure_location_permission_is_turned_on">Make sure location permission is turned on</string>
+    <string name="oops_can_t_determine_your_location">Oops, Can\'t determine your location</string>
+</resources>

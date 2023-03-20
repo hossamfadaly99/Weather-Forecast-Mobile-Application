@@ -77,7 +77,7 @@ class HomeFragment : Fragment() {
         noInternetSnackbar = Snackbar.make(
             binding.layout,
             "No internet connection!",
-            Snackbar.LENGTH_LONG
+            Snackbar.ANIMATION_MODE_SLIDE
         )
             .setAction("Setting") {
                 val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
@@ -147,7 +147,8 @@ class HomeFragment : Fragment() {
                     //no location
                     //TODO observe data -> if != null display else show tv and btn to open the location
                     //i think we dont need to observer inside if and else
-                    viewModel.weather.collectLatest { result ->
+                    //TODO remove comment
+                    /*viewModel.weather.collectLatest { result ->
                         when (result) {
                             is ApiState.Success -> {
                                 hideNoLocationViews()
@@ -177,11 +178,12 @@ class HomeFragment : Fragment() {
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
 
             }
 
+            //TODO remove comment
             viewModel.weather.collectLatest { result ->
                 Log.i(TAG, "onViewCreated: collectLatest")
                 when (result) {
@@ -203,98 +205,17 @@ class HomeFragment : Fragment() {
                     else -> {
 
                         Log.i("iecrhje", "timezone: error maybe no data $result")
-                        this.cancel()
+                        if (!(checkPermissions() && isLocationEnabled()))
+                            handleLocationPermission()
+                        //this.cancel()
                     }
                 }
             }
         }
     }
 
-    /*private fun refreshWeather() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) {
-                if (checkPermissions()) {
-                    if (isLocationEnabled()) {
-                        hideNoLocationViews()
-                        if (isOnline(requireContext())) {
-                            viewModel.getOnlineWeather(
-                                latitude.toString(),
-                                longitude.toString(),
-                                "d7b359e69914f81117abea49314510cf"
-                            )
-                        } else {
-                            viewModel.getSavedWeather()
-                        }
-                    } else {
-                        Log.i(TAG, "refreshWeather: c")
-                        handleLocationPermission()
-                    }
-                } else {
-                    Log.i(TAG, "refreshWeather: d")
-                    viewModel.getSavedWeather()
-                    viewModel.weather.collectLatest { result ->
-                        when (result) {
-                            is ApiState.Success -> {
-                                hideNoLocationViews()
-                                Log.i(TAG, "refreshWeather: sucessssss")
-                                if (checkPermissions() && isLocationEnabled() && isOnline(requireContext())) {
-                                    Log.i(TAG, "refreshWeather: ygeb data men network")
-                                    requestNewLocationData()
-//                                    refreshWeather()
-                                    viewModel.getOnlineWeather(
-                                        latitude.toString(),
-                                        longitude.toString(),
-                                        "d7b359e69914f81117abea49314510cf"
-                                    )
-                                    this.cancel()
-                                } else {
-                                    withContext(Dispatchers.Main) {
-                                        Log.i(TAG, "refreshWeather: main thread & should update ui")
-                                        binding.tv.text =
-                                            getDateTime(result.data.current.dt.toString())
-                                    }
-                                }
-                            }
-                            else -> {
-                                Log.i(TAG, "refreshWeather: failed")
-                                withContext(Dispatchers.Main) {
-                                    handleLocationPermission()
-                                }
-                            }
-                        }
-                    }
-                }
 
-            }
-
-            viewModel.weather.collectLatest { result ->
-                Log.i(TAG, "onViewCreated: collected over network")
-                when (result) {
-                    is ApiState.Success -> {
-                        Log.i(TAG, "refreshWeather: feee resultttt")
-                        getWeather(result)
-                    }
-                    is ApiState.Loading -> {
-                        if (isOnline(requireContext())) {
-                            Log.i("iecrhje", "timezone: loading")
-                        } else {
-                            //TODO hide loading
-                            Log.i("iecrhje", "timezone: else loading")
-                            makeNoNetworkConnectionSnackbar()
-                            if (isLocationEnabled())
-                                noInternetSnackbar.show()
-                        }
-                    }
-                    else -> {
-                        Log.i("iecrhje", "timezone: error maybe no data")
-                    }
-                }
-            }
-        }
-    }*/
-
-    private suspend fun CoroutineScope.getWeather(result: ApiState.Success) {
-        //if (isOnline(requireContext())) {
+    private suspend fun getWeather(result: ApiState.Success) {
             Log.i(
                 "iecrhje",
                 "timezone:${getDateTime(result.data.current.dt.toString())} ${result.data}"
@@ -302,23 +223,7 @@ class HomeFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 binding.tv.text = getDateTime(result.data.current.dt.toString())
             }
-/*            viewModel.saveCurrentWeather(result.data)
-        } else {
-            viewModel.getSavedWeather()
-            Log.i(
-                TAG,
-                "onViewCreated: saved res from db ${result.data.lat}, ${result.data.lon}, ${
-                    getDateTime(
-                        result.data.current.dt.toString()
-                    )
-                }, ${result.data.timezone} ----- ${result.data.current} "
-            )
-            withContext(Dispatchers.Main) {
-                binding.tv.text = getDateTime(result.data.current.dt.toString())
-            }*/
             hideNoLocationViews()
-            //this.cancel()
-        //}
     }
 
     private fun initViewModel() {
@@ -338,13 +243,10 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        //getLastLocation()
 
-//        if(checkPermissions() && isLocationEnabled() && isOnline(requireContext())){
-//            viewModel.getOnlineWeather()
-//        }
         enhancedRefreshWeather()
-        if (!isOnline(requireContext())) {
+        //TODO remove comment (for initial DB check )
+        /*if (!isOnline(requireContext())) {
             lifecycleScope.launch {
                 viewModel.weather.collectLatest { result ->
                     when (result) {
@@ -367,7 +269,9 @@ class HomeFragment : Fragment() {
         } else{
             enhancedRefreshWeather()
             Log.i("last else", "onResume: ")
-        }
+        }*/
+
+
     }
 
     private fun isLocationEnabled(): Boolean {

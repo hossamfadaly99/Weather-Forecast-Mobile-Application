@@ -42,14 +42,14 @@ const val TAG = "HOME_FRAGMENT_TAG"
 
 class HomeFragment : Fragment() {
 
-    lateinit var binding: FragmentHomeBinding
-    lateinit var mFusedLocationClient: FusedLocationProviderClient
+    private lateinit var binding: FragmentHomeBinding
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
     lateinit var geocoder: Geocoder
     lateinit var viewModel: HomeViewModel
-    lateinit var viewModelFactory: HomeViewModelFactory
-    lateinit var noInternetSnackbar: Snackbar
-    var lati: Double = 0.0
-    var longi: Double = 0.0
+    private lateinit var viewModelFactory: HomeViewModelFactory
+    private lateinit var noInternetSnackbar: Snackbar
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,15 +68,16 @@ class HomeFragment : Fragment() {
         getLastLocation()
 
         binding.tv.setOnClickListener {
-            refreshWeather()
+            enhancedRefreshWeather()
         }
     }
 
+    //TODO replace snackbar with another view
     private fun makeNoNetworkConnectionSnackbar() {
         noInternetSnackbar = Snackbar.make(
             binding.layout,
             "No internet connection!",
-            Snackbar.LENGTH_INDEFINITE
+            Snackbar.LENGTH_LONG
         )
             .setAction("Setting") {
                 val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
@@ -111,7 +112,105 @@ class HomeFragment : Fragment() {
         binding.settingButton.visibility = View.GONE
     }
 
-    private fun refreshWeather() {
+    private fun enhancedRefreshWeather() {
+        Log.i(TAG, "enhancedRefreshWeather: ")
+        lifecycleScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                if (checkPermissions()) {
+                    if (isLocationEnabled()) {
+                        hideNoLocationViews()
+                        if (isOnline(requireContext())) {
+                            //network and location
+                            //update the database from the network
+                            Log.i(TAG, "enhancedRefreshWeather: network and location")
+
+                            viewModel.getOnlineWeather(
+                                latitude.toString(),
+                                longitude.toString(),
+                                "en"
+                            )
+                        } else {
+                            //location, No network
+                            //TODO observe data -> if != null display else show tv and btn to open the network
+                            makeNoNetworkConnectionSnackbar()
+                            if (isLocationEnabled())
+                                noInternetSnackbar.show() else {}
+                            //viewModel.getSavedWeather()
+                        }
+                    } else {
+                        //no location
+                        Log.i(TAG, "refreshWeather: c")
+                        //TODO observe data -> if != null display else show tv and btn to open the location
+                        handleLocationPermission()
+                    }
+                } else {
+                    //no location
+                    //TODO observe data -> if != null display else show tv and btn to open the location
+                    //i think we dont need to observer inside if and else
+                    viewModel.weather.collectLatest { result ->
+                        when (result) {
+                            is ApiState.Success -> {
+                                hideNoLocationViews()
+                                Log.i(TAG, "refreshWeather: sucessssss")
+                                if (checkPermissions() && isLocationEnabled() && isOnline(requireContext())) {
+                                    Log.i(TAG, "refreshWeather: ygeb data men network")
+                                    requestNewLocationData()
+//                                    refreshWeather()
+                                    viewModel.getOnlineWeather(
+                                        latitude.toString(),
+                                        longitude.toString(),
+                                        "en"
+                                    )
+                                    this.cancel()
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        Log.i(TAG, "refreshWeather: main thread & should update ui")
+                                        binding.tv.text =
+                                            getDateTime(result.data.current.dt.toString())
+                                    }
+                                }
+                            }
+                            else -> {
+                                Log.i(TAG, "refreshWeather: failed")
+                                withContext(Dispatchers.Main) {
+                                    handleLocationPermission()
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            viewModel.weather.collectLatest { result ->
+                Log.i(TAG, "onViewCreated: collectLatest")
+                when (result) {
+                    is ApiState.Success -> {
+                        Log.i(TAG, "refreshWeather: feee resultttt")
+                        getWeather(result)
+                    }
+                    is ApiState.Loading -> {
+                        if (isOnline(requireContext())) {
+                            Log.i("iecrhje", "timezone: loading")
+                        } else {
+                            //TODO hide loading
+                            Log.i("iecrhje", "timezone: else loading")
+                            makeNoNetworkConnectionSnackbar()
+                            if (isLocationEnabled())
+                                noInternetSnackbar.show()
+                        }
+                    }
+                    else -> {
+
+                        Log.i("iecrhje", "timezone: error maybe no data $result")
+                        this.cancel()
+                    }
+                }
+            }
+        }
+    }
+
+    /*private fun refreshWeather() {
         lifecycleScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
                 if (checkPermissions()) {
@@ -119,8 +218,8 @@ class HomeFragment : Fragment() {
                         hideNoLocationViews()
                         if (isOnline(requireContext())) {
                             viewModel.getOnlineWeather(
-                                lati.toString(),
-                                longi.toString(),
+                                latitude.toString(),
+                                longitude.toString(),
                                 "d7b359e69914f81117abea49314510cf"
                             )
                         } else {
@@ -143,8 +242,8 @@ class HomeFragment : Fragment() {
                                     requestNewLocationData()
 //                                    refreshWeather()
                                     viewModel.getOnlineWeather(
-                                        lati.toString(),
-                                        longi.toString(),
+                                        latitude.toString(),
+                                        longitude.toString(),
                                         "d7b359e69914f81117abea49314510cf"
                                     )
                                     this.cancel()
@@ -192,10 +291,10 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-    }
+    }*/
 
     private suspend fun CoroutineScope.getWeather(result: ApiState.Success) {
-        if (isOnline(requireContext())) {
+        //if (isOnline(requireContext())) {
             Log.i(
                 "iecrhje",
                 "timezone:${getDateTime(result.data.current.dt.toString())} ${result.data}"
@@ -203,7 +302,7 @@ class HomeFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 binding.tv.text = getDateTime(result.data.current.dt.toString())
             }
-            viewModel.saveCurrentWeather(result.data)
+/*            viewModel.saveCurrentWeather(result.data)
         } else {
             viewModel.getSavedWeather()
             Log.i(
@@ -216,10 +315,10 @@ class HomeFragment : Fragment() {
             )
             withContext(Dispatchers.Main) {
                 binding.tv.text = getDateTime(result.data.current.dt.toString())
-            }
+            }*/
             hideNoLocationViews()
-            this.cancel()
-        }
+            //this.cancel()
+        //}
     }
 
     private fun initViewModel() {
@@ -241,7 +340,10 @@ class HomeFragment : Fragment() {
         super.onResume()
         //getLastLocation()
 
-        refreshWeather()
+//        if(checkPermissions() && isLocationEnabled() && isOnline(requireContext())){
+//            viewModel.getOnlineWeather()
+//        }
+        enhancedRefreshWeather()
         if (!isOnline(requireContext())) {
             lifecycleScope.launch {
                 viewModel.weather.collectLatest { result ->
@@ -249,21 +351,23 @@ class HomeFragment : Fragment() {
                         is ApiState.Success -> {
                             if (result.data.timezone.isEmpty()) {
                                 Log.i("no network, there is data", "onResume: ")
-                                refreshWeather()
+                                enhancedRefreshWeather()
                             } else {
                                 Log.i("no network no data", "onResume: ")
                             }
                         }
 
                         else -> {
-                            refreshWeather()
                             Log.i("else", "onResume: ")
+                            enhancedRefreshWeather()
                         }
                     }
                 }
             }
-        } else
-            refreshWeather()
+        } else{
+            enhancedRefreshWeather()
+            Log.i("last else", "onResume: ")
+        }
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -320,15 +424,19 @@ class HomeFragment : Fragment() {
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
             val mLastLocation: Location = locationResult.lastLocation
-            lati = mLastLocation.latitude
-            longi = mLastLocation.longitude
-            viewModel.getOnlineWeather(
-                lati.toString(),
-                longi.toString(),
-                "d7b359e69914f81117abea49314510cf"
-            )
+            latitude = mLastLocation.latitude
+            longitude = mLastLocation.longitude
 
-            Log.i("kjnvrnt", "lat: $lati, long: $longi")
+            if (isOnline(requireContext())) {
+                viewModel.getOnlineWeather(
+                    latitude.toString(),
+                    longitude.toString(),
+                    "en"
+                )
+            }else{
+                Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE).show()
+            }
+            Log.i("kjnvrnt", "lat: $latitude, long: $longitude")
 //            latitudeTV.text = mLastLocation.latitude.toString()
 //            longitudeTV.text = mLastLocation.longitude.toString()
 //            val address =

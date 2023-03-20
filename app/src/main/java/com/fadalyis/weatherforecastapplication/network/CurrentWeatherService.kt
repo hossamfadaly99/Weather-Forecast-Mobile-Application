@@ -8,5 +8,5 @@ import retrofit2.http.Query
 
 interface CurrentWeatherService {
     @GET("onecall?")
-    suspend fun getCurrentWeather(@Query("lat") lat: String, @Query("lon") lon: String, @Query("appid") API_Key: String):Response<CurrentResponse>
+    suspend fun getCurrentWeather(@Query("lat") lat: String, @Query("lon") lon: String, @Query("lang") lang: String, @Query("appid") API_Key: String = "5105a7173c3805fa7994a304fe55b5ea"):Response<CurrentResponse>
 }

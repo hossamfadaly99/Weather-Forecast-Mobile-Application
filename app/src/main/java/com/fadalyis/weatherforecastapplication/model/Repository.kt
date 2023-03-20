@@ -28,9 +28,10 @@ class Repository private constructor(
     override suspend fun getCurrentWeatherOnline(
         lat: String,
         lon: String,
-        apiKey: String
-    ): Flow<CurrentResponse> {
-        return flowOf( remoteSource.getCurrentWeatherOnline(lat, lon, apiKey))
+        lang: String
+    ){
+        val response = remoteSource.getCurrentWeatherOnline(lat, lon, lang)
+        localSource.insertCurrentWeather(response)
     }
 
 

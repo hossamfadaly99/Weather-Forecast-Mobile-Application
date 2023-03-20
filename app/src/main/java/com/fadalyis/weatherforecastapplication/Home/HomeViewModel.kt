@@ -20,13 +20,17 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
     val weather: StateFlow<ApiState> = _weather
 
 
-    fun saveCurrentWeather(currentWeather: CurrentResponse) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _repoInterface.insertCurrentWeather(currentWeather)
-        }
+//    fun saveCurrentWeather(currentWeather: CurrentResponse) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            _repoInterface.insertCurrentWeather(currentWeather)
+//        }
+//    }
+
+    init {
+        getSavedWeather()
     }
 
-    fun getSavedWeather() = viewModelScope.launch {
+    private fun getSavedWeather() = viewModelScope.launch {
         _repoInterface.getCurrentWeatherOffline()
             .catch {
                 Log.i(TAG, "getSavedWeather: catch")
@@ -37,6 +41,7 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
                 if (it != null)
                     _weather.value = ApiState.Success(it)
                 else {
+                    _weather.value = ApiState.Failure(Throwable("no items in database - implemented throwable"))
                     //TODO mesh fahem
                     //_weather.value = ApiState.Failure(it)
                 }
@@ -46,14 +51,9 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
     fun getOnlineWeather(
         lat: String,
         lon: String,
-        apiKey: String
+        lang: String
     ) = viewModelScope.launch {
-        _repoInterface.getCurrentWeatherOnline(lat, lon, apiKey)
-            .catch { _weather.value = ApiState.Failure(it) }
-            .collect {
-                _weather.value = ApiState.Success(it)
-            }
+        _repoInterface.getCurrentWeatherOnline(lat, lon, lang)
     }
-
 
 }

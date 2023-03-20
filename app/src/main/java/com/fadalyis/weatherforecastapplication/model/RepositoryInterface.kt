@@ -9,7 +9,7 @@ interface RepositoryInterface {
         lat: String,
         lon: String,
         apiKey: String = "d7b359e69914f81117abea49314510cf"
-    ): Flow<CurrentResponse> //network
+    ) //network
 
     suspend fun insertCurrentWeather(weatherResponse: CurrentResponse)
     suspend fun getCurrentWeatherOffline(): Flow<CurrentResponse?> //database

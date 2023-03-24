@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -20,8 +21,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentHomeBinding
 import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
 import com.fadalyis.weatherforecastapplication.model.Repository
@@ -47,9 +52,14 @@ class HomeFragment : Fragment() {
     lateinit var geocoder: Geocoder
     lateinit var viewModel: HomeViewModel
     private lateinit var viewModelFactory: HomeViewModelFactory
+    private lateinit var mHourlyAdapter: HourlyAdapter
+    private lateinit var mHourlyLayoutManager: LinearLayoutManager
+    private lateinit var mDailyAdapter: DailyAdapter
+    private lateinit var mDailyLayoutManager: LinearLayoutManager
     private lateinit var noInternetSnackbar: Snackbar
     var latitude: Double = 0.0
     var longitude: Double = 0.0
+    lateinit var address: Address
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,6 +68,7 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        geocoder = Geocoder(requireContext(), Locale.getDefault())
         return binding.root
     }
 
@@ -65,20 +76,26 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initViewModel()
+        binding.progressBar.visibility = View.VISIBLE
         getLastLocation()
 
-        binding.tv.setOnClickListener {
+        binding.swipeRefreshLayout.setOnRefreshListener {
             enhancedRefreshWeather()
+            binding.swipeRefreshLayout.isRefreshing = false
         }
+//        binding.lastDateTv.setOnClickListener {
+//            enhancedRefreshWeather()
+//        }
     }
 
     //TODO replace snackbar with another view
     private fun makeNoNetworkConnectionSnackbar() {
         noInternetSnackbar = Snackbar.make(
-            binding.layout,
+            binding.coordinator,
             "No internet connection!",
-            Snackbar.ANIMATION_MODE_SLIDE
+            Snackbar.LENGTH_INDEFINITE
         )
+            .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE)
             .setAction("Setting") {
                 val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
                 startActivity(intent)
@@ -103,6 +120,8 @@ class HomeFragment : Fragment() {
         binding.problemTitleTv.visibility = View.VISIBLE
         binding.problemDescriptionTv.visibility = View.VISIBLE
         binding.settingButton.visibility = View.VISIBLE
+
+        binding.progressBar.visibility = View.INVISIBLE
     }
 
     private fun hideNoLocationViews() {
@@ -110,6 +129,8 @@ class HomeFragment : Fragment() {
         binding.problemTitleTv.visibility = View.GONE
         binding.problemDescriptionTv.visibility = View.GONE
         binding.settingButton.visibility = View.GONE
+
+        binding.progressBar.visibility = View.VISIBLE
     }
 
     private fun enhancedRefreshWeather() {
@@ -123,18 +144,27 @@ class HomeFragment : Fragment() {
                             //network and location
                             //update the database from the network
                             Log.i(TAG, "enhancedRefreshWeather: network and location")
-
-                            viewModel.getOnlineWeather(
-                                latitude.toString(),
-                                longitude.toString(),
-                                "en"
+                            Log.i(
+                                "kvrntvjrjh",
+                                "latttttttt, longgggggggggg first: $latitude, $longitude"
+                            )
+//                            viewModel.getOnlineWeather(
+//                                latitude.toString(),
+//                                longitude.toString(),
+//                                "en"
+//                            )
+                            requestNewLocationData()
+                            Log.i(
+                                "kvrntvjrjh",
+                                "latttttttt, longgggggggggg first: $latitude, $longitude"
                             )
                         } else {
                             //location, No network
                             //TODO observe data -> if != null display else show tv and btn to open the network
                             makeNoNetworkConnectionSnackbar()
                             if (isLocationEnabled())
-                                noInternetSnackbar.show() else {}
+                                noInternetSnackbar.show() else {
+                            }
                             //viewModel.getSavedWeather()
                         }
                     } else {
@@ -144,70 +174,38 @@ class HomeFragment : Fragment() {
                         handleLocationPermission()
                     }
                 } else {
-                    //no location
-                    //TODO observe data -> if != null display else show tv and btn to open the location
-                    //i think we dont need to observer inside if and else
-                    //TODO remove comment
-                    /*viewModel.weather.collectLatest { result ->
-                        when (result) {
-                            is ApiState.Success -> {
-                                hideNoLocationViews()
-                                Log.i(TAG, "refreshWeather: sucessssss")
-                                if (checkPermissions() && isLocationEnabled() && isOnline(requireContext())) {
-                                    Log.i(TAG, "refreshWeather: ygeb data men network")
-                                    requestNewLocationData()
-//                                    refreshWeather()
-                                    viewModel.getOnlineWeather(
-                                        latitude.toString(),
-                                        longitude.toString(),
-                                        "en"
-                                    )
-                                    this.cancel()
-                                } else {
-                                    withContext(Dispatchers.Main) {
-                                        Log.i(TAG, "refreshWeather: main thread & should update ui")
-                                        binding.tv.text =
-                                            getDateTime(result.data.current.dt.toString())
-                                    }
-                                }
-                            }
-                            else -> {
-                                Log.i(TAG, "refreshWeather: failed")
-                                withContext(Dispatchers.Main) {
-                                    handleLocationPermission()
-                                }
-                            }
-                        }
-                    }*/
                 }
-
             }
-
-            //TODO remove comment
             viewModel.weather.collectLatest { result ->
                 Log.i(TAG, "onViewCreated: collectLatest")
                 when (result) {
                     is ApiState.Success -> {
                         Log.i(TAG, "refreshWeather: feee resultttt")
                         getWeather(result)
+                        binding.progressBar.visibility = View.INVISIBLE
                     }
                     is ApiState.Loading -> {
                         if (isOnline(requireContext())) {
                             Log.i("iecrhje", "timezone: loading")
+                            binding.progressBar.visibility = View.VISIBLE
                         } else {
                             //TODO hide loading
                             Log.i("iecrhje", "timezone: else loading")
                             makeNoNetworkConnectionSnackbar()
-                            if (isLocationEnabled())
+                            if (isLocationEnabled()) {
                                 noInternetSnackbar.show()
+                                binding.progressBar.visibility = View.INVISIBLE
+                            }
                         }
                     }
                     else -> {
-
                         Log.i("iecrhje", "timezone: error maybe no data $result")
-                        if (!(checkPermissions() && isLocationEnabled()))
-                            handleLocationPermission()
-                        //this.cancel()
+                        if (!(checkPermissions() && isLocationEnabled())) {
+                            withContext(Dispatchers.Main) {
+                                handleLocationPermission()
+                                binding.progressBar.visibility = View.INVISIBLE
+                            }
+                        }
                     }
                 }
             }
@@ -216,14 +214,80 @@ class HomeFragment : Fragment() {
 
 
     private suspend fun getWeather(result: ApiState.Success) {
-            Log.i(
-                "iecrhje",
-                "timezone:${getDateTime(result.data.current.dt.toString())} ${result.data}"
-            )
-            withContext(Dispatchers.Main) {
-                binding.tv.text = getDateTime(result.data.current.dt.toString())
+        Log.i(
+            "iecrhje",
+            "timezone:${getDateTime(result.data.current.dt.toString())} ${result.data}"
+        )
+
+        Log.i(
+            "iecrhje",
+            "lat & lon:${result.data.lat} ${result.data.timezone} ${result.data.daily} ${result.data.lon}"
+        )
+
+        val current = result.data.current
+        mHourlyAdapter = HourlyAdapter(result.data.hourly.take(24))
+        mHourlyLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        mDailyAdapter = DailyAdapter(result.data.daily)
+        mDailyLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+
+        withContext(Dispatchers.IO) {
+            try {
+                val gcd = geocoder.getFromLocation(
+                    result.data.lat.toDouble(),
+                    result.data.lon.toDouble(),
+                    1
+                )
+                Log.i(TAG, "getWeather gcd: $gcd")
+                address = gcd?.get(0)!!
+                Log.i(TAG, "getWeather address: $address")
+            } catch (e: Exception) {
+//                e.printStackTrace()
             }
+        }
+
+        withContext(Dispatchers.Main) {
+
+            ////TODO check shared pref temp
+            val converter = -272.15 //0 //third transform
+
+            binding.apply {
+
+                lastDateTv.text = getDateTime(current.dt.toString())
+                cityTv.text = address.locality ?: address.getAddressLine(0).split(',')[0]
+                tempTv.text = (current.temp + converter).toInt().toString() + "°"
+                weatherDescriptionTv.text = current.weather[0].description
+                Glide.with(requireContext())
+                    .load("https://openweathermap.org/img/wn/${current.weather.get(0).icon}@4x.png")
+                    .into(weatherIconHome)
+                tempHighTv.text =
+                    (result.data.daily.get(0).temp.max + converter).toInt().toString() + "°"
+                tempLowTv.text =
+                    (result.data.daily.get(0).temp.min + converter).toInt().toString() + "°"
+                hourlyRecyclerview.apply {
+                    adapter = mHourlyAdapter
+                    layoutManager = mHourlyLayoutManager
+                }
+                dailyRecyclerview.apply {
+                    adapter = mDailyAdapter
+                    layoutManager = mDailyLayoutManager
+                }
+                cloudPercentageTv.text = "${current.clouds}%"
+                humidityPercentageTv.text = "${current.humidity}%"
+                //TODO add second converter
+                windSpeedTv.text = current.wind_speed.toString()
+                pressurecloudPercentageTv.text = "${current.pressure} hpa"
+                layout.background = if (current.dt > current.sunset)
+                    ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
+                else
+                    ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)
+
+            }
+        }
+        withContext(Dispatchers.Main) {
             hideNoLocationViews()
+        }
     }
 
     private fun initViewModel() {
@@ -243,42 +307,14 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         enhancedRefreshWeather()
-        //TODO remove comment (for initial DB check )
-        /*if (!isOnline(requireContext())) {
-            lifecycleScope.launch {
-                viewModel.weather.collectLatest { result ->
-                    when (result) {
-                        is ApiState.Success -> {
-                            if (result.data.timezone.isEmpty()) {
-                                Log.i("no network, there is data", "onResume: ")
-                                enhancedRefreshWeather()
-                            } else {
-                                Log.i("no network no data", "onResume: ")
-                            }
-                        }
-
-                        else -> {
-                            Log.i("else", "onResume: ")
-                            enhancedRefreshWeather()
-                        }
-                    }
-                }
-            }
-        } else{
-            enhancedRefreshWeather()
-            Log.i("last else", "onResume: ")
-        }*/
-
-
     }
 
     private fun isLocationEnabled(): Boolean {
         val locationManager: LocationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-     //           || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        //           || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     @SuppressLint("MissingPermission")
@@ -316,6 +352,7 @@ class HomeFragment : Fragment() {
         mLocationRequest.setPriority(com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY)
         mLocationRequest.interval = 0
         mLocationRequest.numUpdates = 1
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         mFusedLocationClient.requestLocationUpdates(
@@ -332,15 +369,18 @@ class HomeFragment : Fragment() {
             longitude = mLastLocation.longitude
 
             if (isOnline(requireContext())) {
+                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $latitude, $longitude")
                 viewModel.getOnlineWeather(
                     latitude.toString(),
                     longitude.toString(),
                     "en"
                 )
-            }else{
+                binding.progressBar.visibility = View.INVISIBLE
+            } else {
                 Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE).show()
             }
-            Log.i("kjnvrnt", "lat: $latitude, long: $longitude")
+
+
 //            latitudeTV.text = mLastLocation.latitude.toString()
 //            longitudeTV.text = mLastLocation.longitude.toString()
 //            val address =

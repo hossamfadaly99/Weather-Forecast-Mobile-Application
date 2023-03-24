@@ -10,15 +10,15 @@ import com.fadalyis.weatherforecastapplication.utils.HourlyConverters
 
 @Entity(tableName = "WeatherTable")
 data class CurrentResponse(
+    @PrimaryKey
+    val lat: String,
+    val lon: String,
+    val timezone: String,
+    val timezone_offset: String,
     @TypeConverters(CurrentConverters::class)
     val current: Current,
-    @TypeConverters(DailyConverters::class)
-    val daily: List<Daily>,
     @TypeConverters(HourlyConverters::class)
     val hourly: List<Hourly>,
-    @PrimaryKey
-    val lat: Double,
-    val lon: Double,
-    val timezone: String,
-    val timezone_offset: Int
+    @TypeConverters(DailyConverters::class)
+    val daily: List<Daily>
 )

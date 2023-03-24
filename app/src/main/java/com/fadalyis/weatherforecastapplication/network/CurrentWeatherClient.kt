@@ -1,5 +1,6 @@
 package com.fadalyis.weatherforecastapplication.network
 
+import android.util.Log
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import retrofit2.Response
 
@@ -14,6 +15,7 @@ class CurrentWeatherClient private constructor() : RemoteSource {
         lang: String
     ): CurrentResponse {
         response = currentWeatherService.getCurrentWeather(lat, lon, lang)
+        Log.i("iecrhje", "networkClient: ${response.body()?.lat}")
         //TODO remove null assertion
         return response.body()!!
     }

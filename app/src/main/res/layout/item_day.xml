@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/primary">
+
+    <TextView
+        android:id="@+id/daily_day_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:text="Tue"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/daily_icon_imageview"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/daily_icon_imageview" />
+
+    <TextView
+        android:id="@+id/daily_temp_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="33/20"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:drawableEndCompat="@drawable/baseline_arrow_drop_down_24"
+        app:drawableStartCompat="@drawable/baseline_arrow_drop_up_24"
+        app:layout_constraintBottom_toBottomOf="@+id/daily_icon_imageview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/daily_icon_imageview" />
+
+    <TextView
+        android:id="@+id/daily_main_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLength="12"
+        android:maxLines="1"
+        android:text="cloudcloud cloud"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/daily_icon_imageview"
+        app:layout_constraintStart_toEndOf="@+id/daily_icon_imageview"
+        app:layout_constraintTop_toTopOf="@+id/daily_icon_imageview" />
+
+    <ImageView
+        android:id="@+id/daily_icon_imageview"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/dummy_weather_icon" />
+
+    <View
+        android:id="@+id/line2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:alpha="0.5"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/daily_temp_tv"
+        app:layout_constraintStart_toStartOf="@+id/daily_day_tv" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

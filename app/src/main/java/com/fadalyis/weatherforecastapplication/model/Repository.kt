@@ -1,6 +1,7 @@
 package com.fadalyis.weatherforecastapplication.model
 
 import android.location.Address
+import android.util.Log
 import com.fadalyis.weatherforecastapplication.db.LocalSource
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import com.fadalyis.weatherforecastapplication.network.RemoteSource
@@ -31,6 +32,7 @@ class Repository private constructor(
         lang: String
     ){
         val response = remoteSource.getCurrentWeatherOnline(lat, lon, lang)
+        Log.i("iecrhje", "getCurrentWeatherOnline: ${response.lat}")
         localSource.insertCurrentWeather(response)
     }
 

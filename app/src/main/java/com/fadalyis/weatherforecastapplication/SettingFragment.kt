@@ -64,6 +64,7 @@ class SettingFragment : Fragment() {
                     editor.putBoolean(Constants.NOTIFICATIONS, false)
             }
 
+            editor.apply()
 
         }
     }

@@ -1,59 +1,70 @@
 package com.fadalyis.weatherforecastapplication
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioGroup
+import com.fadalyis.weatherforecastapplication.databinding.FragmentSettingBinding
+import com.fadalyis.weatherforecastapplication.utils.Constants
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [SettingFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SettingFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
+    private lateinit var binding: FragmentSettingBinding
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_setting, container, false)
+        binding = FragmentSettingBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SettingFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SettingFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val sharedPreferences = requireActivity().getSharedPreferences(Constants.SETTING_SHARED_PREF, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        binding.apply {
+
+            languageRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+                if (englishRadioBtn.isEnabled)
+                    editor.putString(Constants.LANGUAGE, Constants.ENGLISH)
+                else
+                    editor.putString(Constants.LANGUAGE, Constants.ARABIC)
             }
+            locationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+                if (gpsRadioBtn.isEnabled)
+                    editor.putString(Constants.LOCATION, Constants.GPS)
+                else
+                    editor.putString(Constants.LOCATION, Constants.MAP)
+            }
+            windRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+                if (meterSecRadioBtn.isEnabled)
+                    editor.putString(Constants.WIND, Constants.METER_SEC)
+               else
+                    editor.putString(Constants.WIND, Constants.MILE_HOUR)
+            }
+            tempRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+                if (celsiusRadioBtn.isEnabled)
+                    editor.putString(Constants.TEMPERATURE, Constants.CELSIUS)
+                else if (kelvinRadioBtn.isEnabled)
+                    editor.putString(Constants.TEMPERATURE, Constants.KELVIN)
+                else
+                editor.putString(Constants.TEMPERATURE, Constants.FAHRENHEIT)
+            }
+
+            notificationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+                if (enableRadioBtn.isEnabled)
+                    editor.putBoolean(Constants.NOTIFICATIONS, true)
+                else
+                    editor.putBoolean(Constants.NOTIFICATIONS, false)
+            }
+
+
+        }
     }
 }

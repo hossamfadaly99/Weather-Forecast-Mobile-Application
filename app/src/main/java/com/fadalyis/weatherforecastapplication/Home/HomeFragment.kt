@@ -278,7 +278,7 @@ class HomeFragment : Fragment() {
                 //TODO add second converter
                 windSpeedTv.text = current.wind_speed.toString()
                 pressurecloudPercentageTv.text = "${current.pressure} hpa"
-                layout.background = if (current.dt > current.sunset)
+                layout.background = if (current.dt > current.sunset || current.dt < current.sunrise)
                     ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
                 else
                     ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)

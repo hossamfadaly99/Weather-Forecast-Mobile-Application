@@ -2,6 +2,7 @@ package com.fadalyis.weatherforecastapplication.model
 
 import android.location.Address
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
+import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import kotlinx.coroutines.flow.Flow
 
 interface RepositoryInterface {
@@ -13,9 +14,9 @@ interface RepositoryInterface {
 
     suspend fun insertCurrentWeather(weatherResponse: CurrentResponse)
     suspend fun getCurrentWeatherOffline(): Flow<CurrentResponse?> //database
-    suspend fun insertFavLocation(address: Address)
-    suspend fun deleteFavLocation(address: Address)
-    suspend fun getFavLocations(): List<Address>
+    suspend fun insertFavLocation(address: FavAddress)
+    suspend fun deleteFavLocation(address: FavAddress)
+    suspend fun getFavLocations(): Flow<List<FavAddress>>
 
     //maybe alerts retrieved/stored
 }

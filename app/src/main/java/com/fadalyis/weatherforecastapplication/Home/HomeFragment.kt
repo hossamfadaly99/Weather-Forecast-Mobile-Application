@@ -32,10 +32,7 @@ import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.network.ApiState
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
@@ -241,7 +238,7 @@ class HomeFragment : Fragment() {
                 )
                 Log.i(TAG, "getWeather gcd: $gcd")
                 address = gcd?.get(0)!!
-                Log.i(TAG, "getWeather address: $address")
+                //Log.i(TAG, "getWeather address: $address")
             } catch (e: Exception) {
 //                e.printStackTrace()
             }
@@ -278,7 +275,7 @@ class HomeFragment : Fragment() {
                 //TODO add second converter
                 windSpeedTv.text = current.wind_speed.toString()
                 pressurecloudPercentageTv.text = "${current.pressure} hpa"
-                layout.background = if (current.dt > current.sunset || current.dt < current.sunrise)
+                layout.background = if (current.dt > current.sunset /*|| current.dt < current.sunrise*/)
                     ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
                 else
                     ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)
@@ -348,8 +345,8 @@ class HomeFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
-        val mLocationRequest = com.google.android.gms.location.LocationRequest()
-        mLocationRequest.setPriority(com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY)
+        val mLocationRequest = LocationRequest()
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
         mLocationRequest.interval = 0
         mLocationRequest.numUpdates = 1
 

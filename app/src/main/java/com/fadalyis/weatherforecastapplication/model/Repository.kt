@@ -4,6 +4,7 @@ import android.location.Address
 import android.util.Log
 import com.fadalyis.weatherforecastapplication.db.LocalSource
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
+import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.RemoteSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -45,15 +46,15 @@ class Repository private constructor(
         return localSource.getCurrentWeather()
     }
 
-    override suspend fun insertFavLocation(address: Address) {
-        TODO("Not yet implemented")
+    override suspend fun insertFavLocation(address: FavAddress) {
+        localSource.insertFavLocation(address)
     }
 
-    override suspend fun deleteFavLocation(address: Address) {
-        TODO("Not yet implemented")
+    override suspend fun deleteFavLocation(address: FavAddress) {
+        localSource.deleteFavLocation(address)
     }
 
-    override suspend fun getFavLocations(): List<Address> {
-        TODO("Not yet implemented")
+    override suspend fun getFavLocations(): Flow<List<FavAddress>> {
+        return  localSource.getFavLocations()
     }
 }

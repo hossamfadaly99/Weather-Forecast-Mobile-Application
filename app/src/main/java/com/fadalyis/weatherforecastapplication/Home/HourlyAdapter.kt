@@ -43,16 +43,6 @@ class HourlyAdapter(var hoursList: List<Hourly>) :
             .into(holder.binding.imageView)
     }
 
-    private fun getDateDay(s: String): String? {
-        return try {
-            val sdf = SimpleDateFormat("E")
-            val netDate = Date(s.toLong() * 1000)
-            sdf.format(netDate)
-        } catch (e: Exception) {
-            e.toString()
-        }
-    }
-
     private fun getDateHour(s: String): String? {
         return try {
             val sdf = SimpleDateFormat("h a")

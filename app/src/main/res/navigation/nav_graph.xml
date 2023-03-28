@@ -12,9 +12,13 @@
         tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/favoriteFragment"
-        android:name="com.fadalyis.weatherforecastapplication.FavoriteFragment"
+        android:name="com.fadalyis.weatherforecastapplication.favorite.FavoriteFragment"
         android:label="fragment_favorite"
-        tools:layout="@layout/fragment_favorite" />
+        tools:layout="@layout/fragment_favorite" >
+        <action
+            android:id="@+id/action_favoriteFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/alertFragment"
         android:name="com.fadalyis.weatherforecastapplication.AlertFragment"
@@ -25,4 +29,13 @@
         android:name="com.fadalyis.weatherforecastapplication.SettingFragment"
         android:label="fragment_setting"
         tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.example.navigationcomponent.MapsFragment"
+        android:label="MapsFragment" >
+        <action
+            android:id="@+id/action_mapsFragment_to_favoriteFragment"
+            app:destination="@id/favoriteFragment"
+            app:popUpTo="@id/favoriteFragment" />
+    </fragment>
 </navigation>

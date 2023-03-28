@@ -28,44 +28,94 @@ class SettingFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences(Constants.SETTING_SHARED_PREF, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
+        editor.putBoolean("ahahaha", true)
         binding.apply {
 
-            languageRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (englishRadioBtn.isEnabled)
-                    editor.putString(Constants.LANGUAGE, Constants.ENGLISH)
-                else
-                    editor.putString(Constants.LANGUAGE, Constants.ARABIC)
-            }
-            locationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (gpsRadioBtn.isEnabled)
-                    editor.putString(Constants.LOCATION, Constants.GPS)
-                else
-                    editor.putString(Constants.LOCATION, Constants.MAP)
-            }
-            windRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (meterSecRadioBtn.isEnabled)
-                    editor.putString(Constants.WIND, Constants.METER_SEC)
-               else
-                    editor.putString(Constants.WIND, Constants.MILE_HOUR)
-            }
-            tempRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (celsiusRadioBtn.isEnabled)
-                    editor.putString(Constants.TEMPERATURE, Constants.CELSIUS)
-                else if (kelvinRadioBtn.isEnabled)
-                    editor.putString(Constants.TEMPERATURE, Constants.KELVIN)
-                else
-                editor.putString(Constants.TEMPERATURE, Constants.FAHRENHEIT)
-            }
-
-            notificationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (enableRadioBtn.isEnabled)
-                    editor.putBoolean(Constants.NOTIFICATIONS, true)
-                else
-                    editor.putBoolean(Constants.NOTIFICATIONS, false)
-            }
+            loadData(sharedPreferences)
+            checkChange(editor)
 
             editor.apply()
 
+        }
+    }
+
+    private fun FragmentSettingBinding.loadData(
+        sharedPreferences: SharedPreferences
+    ) {
+        val language = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH)
+        val location = sharedPreferences.getString(Constants.LOCATION, Constants.GPS)
+        val windSpeed = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC)
+        val temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS)
+        val notification = sharedPreferences.getBoolean(Constants.NOTIFICATIONS, true)
+
+        if (language == Constants.ENGLISH) englishRadioBtn.isChecked = true
+        else arabicRadioBtn.isChecked = true
+
+        if (location == Constants.GPS) gpsRadioBtn.isChecked = true
+        else mapsRadioBtn.isChecked = true
+
+        if (windSpeed == Constants.METER_SEC) meterSecRadioBtn.isChecked = true
+        else mileHourRadioBtn.isChecked = true
+
+        if (temp == Constants.CELSIUS) celsiusRadioBtn.isChecked = true
+        else if (temp == Constants.KELVIN) kelvinRadioBtn.isChecked = true
+        else fahrenheitRadioBtn.isChecked = true
+
+        if (notification) enableRadioBtn.isChecked = true
+        else disableRadioBtn.isChecked = true
+    }
+
+    private fun FragmentSettingBinding.checkChange(
+        editor: SharedPreferences.Editor
+    ) {
+        languageRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (englishRadioBtn.isChecked){
+                editor.putString(Constants.LANGUAGE, Constants.ENGLISH)
+                Log.i("ayhaga", "checkChange: english")
+            }
+            else{
+                editor.putString(Constants.LANGUAGE, Constants.ARABIC)
+                Log.i("ayhaga", "checkChange: arabic")
+            }
+            editor.apply()
+        }
+        locationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (gpsRadioBtn.isChecked) {
+                editor.putString(Constants.LOCATION, Constants.GPS)
+                editor.apply()
+            }
+            else {
+                editor.putString(Constants.LOCATION, Constants.MAP)
+                editor.apply()
+            }
+        }
+        windRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (meterSecRadioBtn.isChecked) {
+                editor.putString(Constants.WIND, Constants.METER_SEC)
+                editor.apply()
+            }
+            else {
+                editor.putString(Constants.WIND, Constants.MILE_HOUR)
+                editor.apply()
+            }
+        }
+        tempRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (celsiusRadioBtn.isChecked) {
+                editor.putString(Constants.TEMPERATURE, Constants.CELSIUS)
+            }
+            else if (kelvinRadioBtn.isChecked)
+                editor.putString(Constants.TEMPERATURE, Constants.KELVIN)
+            else
+                editor.putString(Constants.TEMPERATURE, Constants.FAHRENHEIT)
+            editor.apply()
+        }
+
+        notificationRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (enableRadioBtn.isChecked)
+                editor.putBoolean(Constants.NOTIFICATIONS, true)
+            else
+                editor.putBoolean(Constants.NOTIFICATIONS, false)
+            editor.apply()
         }
     }
 }

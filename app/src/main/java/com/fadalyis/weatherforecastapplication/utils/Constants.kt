@@ -7,8 +7,8 @@ object Constants {
     const val WIND = "WIND"
     const val TEMPERATURE = "TEMPERATURE"
     const val NOTIFICATIONS = "NOTIFICATIONS"
-    const val ENGLISH = "ENGLISH"
-    const val ARABIC = "ARABIC"
+    const val ENGLISH = "en"
+    const val ARABIC = "ar"
     const val GPS = "GPS"
     const val MAP = "MAP"
     const val METER_SEC = "METER_SEC"
@@ -17,5 +17,9 @@ object Constants {
     const val KELVIN = "KELVIN"
     const val FAHRENHEIT = "FAHRENHEIT"
     const val SETTING_SHARED_PREF = "SETTING_SHARED_PREF"
+    const val STANDARD = "standard"
+    const val METRIC = "metric"
+    const val IMPERIAL = "imperial"
+
 
 }

@@ -6,12 +6,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.ItemDayBinding
 import com.fadalyis.weatherforecastapplication.model.pojo.Daily
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DailyAdapter(var daysList: List<Daily>) :
+class DailyAdapter(var daysList: List<Daily>, var tempSymbol: String, var context: Context) :
     RecyclerView.Adapter<DailyAdapter.ViewHolder>() {
     private lateinit var binding: ItemDayBinding
 
@@ -29,12 +30,12 @@ class DailyAdapter(var daysList: List<Daily>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         Log.i("frekrnfjnekjtv", "onBindViewHolder: ${daysList.size}")
         val currentDay = daysList[position]
-        val converter = -272.15 //0 //third transform
+
         holder.binding.apply {
-            dailyTempTv.text = "${(currentDay.temp.min + converter).toInt()}°/${(currentDay.temp.max + converter).toInt()}°"
+            dailyTempTv.text = "${(currentDay.temp.min).toInt()}/${(currentDay.temp.max).toInt()}$tempSymbol"
             dailyDayTv.text =
-                if (currentDay == daysList[0]) "Today" else getDateDay(currentDay.dt)
-            dailyMainTv.text = currentDay.weather[0].main
+                if (currentDay == daysList[0]) context.getString(R.string.today) else getDateDay(currentDay.dt)
+            dailyMainTv.text = currentDay.weather[0].description
         }
 
         Glide.with(holder.binding.dailyIconImageview.context)

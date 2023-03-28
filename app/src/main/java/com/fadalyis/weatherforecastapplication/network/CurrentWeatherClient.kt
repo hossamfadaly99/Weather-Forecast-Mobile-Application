@@ -12,9 +12,11 @@ class CurrentWeatherClient private constructor() : RemoteSource {
     override suspend fun getCurrentWeatherOnline(
         lat: String,
         lon: String,
-        lang: String
+        lang: String,
+        units: String
     ): CurrentResponse {
-        response = currentWeatherService.getCurrentWeather(lat, lon, lang)
+        Log.i("menenenenmenenne", "getCurrentWeatherOnline: $lang")
+        response = currentWeatherService.getCurrentWeather(lat, lon, lang, units)
         Log.i("iecrhje", "networkClient: ${response.body()?.lat}")
         //TODO remove null assertion
         return response.body()!!

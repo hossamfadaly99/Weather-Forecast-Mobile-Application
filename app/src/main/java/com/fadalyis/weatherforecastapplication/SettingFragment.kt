@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.RadioGroup
 import com.fadalyis.weatherforecastapplication.databinding.FragmentSettingBinding
 import com.fadalyis.weatherforecastapplication.utils.Constants
+import java.util.*
 
 class SettingFragment : Fragment() {
     private lateinit var binding: FragmentSettingBinding
@@ -28,7 +29,6 @@ class SettingFragment : Fragment() {
         val sharedPreferences = requireActivity().getSharedPreferences(Constants.SETTING_SHARED_PREF, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        editor.putBoolean("ahahaha", true)
         binding.apply {
 
             loadData(sharedPreferences)
@@ -72,10 +72,12 @@ class SettingFragment : Fragment() {
             if (englishRadioBtn.isChecked){
                 editor.putString(Constants.LANGUAGE, Constants.ENGLISH)
                 Log.i("ayhaga", "checkChange: english")
+                setLanguage(Constants.ENGLISH)
             }
             else{
                 editor.putString(Constants.LANGUAGE, Constants.ARABIC)
                 Log.i("ayhaga", "checkChange: arabic")
+                setLanguage(Constants.ARABIC)
             }
             editor.apply()
         }
@@ -117,5 +119,18 @@ class SettingFragment : Fragment() {
                 editor.putBoolean(Constants.NOTIFICATIONS, false)
             editor.apply()
         }
+    }
+
+    private fun setLanguage(language: String) {
+        val metric = resources.displayMetrics
+        val configuration = resources.configuration
+        configuration.locale = Locale(language)
+        Locale.setDefault(Locale(language))
+        configuration.setLayoutDirection(Locale(language))
+        // update configuration
+        resources.updateConfiguration(configuration, metric)
+        // notify configuration
+        onConfigurationChanged(configuration)
+        requireActivity().recreate()
     }
 }

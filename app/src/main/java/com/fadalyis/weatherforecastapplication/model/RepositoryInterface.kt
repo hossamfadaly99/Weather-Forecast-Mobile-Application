@@ -9,7 +9,8 @@ interface RepositoryInterface {
     suspend fun getCurrentWeatherOnline(
         lat: String,
         lon: String,
-        apiKey: String = "d7b359e69914f81117abea49314510cf"
+        lang: String,
+        units: String
     ) //network
 
     suspend fun insertCurrentWeather(weatherResponse: CurrentResponse)

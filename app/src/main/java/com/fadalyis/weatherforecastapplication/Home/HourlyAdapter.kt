@@ -6,12 +6,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.ItemHourBinding
 import com.fadalyis.weatherforecastapplication.model.pojo.Hourly
 import java.text.SimpleDateFormat
 import java.util.*
 
-class HourlyAdapter(var hoursList: List<Hourly>) :
+class HourlyAdapter(var hoursList: List<Hourly>, var tempSymbol: String, var context: Context) :
     RecyclerView.Adapter<HourlyAdapter.ViewHolder>() {
     private lateinit var binding: ItemHourBinding
 
@@ -29,12 +30,12 @@ class HourlyAdapter(var hoursList: List<Hourly>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         //Log.i("frekrnfjnekjtv", "onBindViewHolder: ${hoursList.size}")
         val currentHour = hoursList[position]
-        val converter = -272.15 //0 //third transform
-        holder.binding.hourlyTempTv.text = (currentHour.temp + converter).toInt().toString() + "°"
+
+        holder.binding.hourlyTempTv.text = (currentHour.temp ).toInt().toString() + tempSymbol
 
         holder.binding.hourlyTimeTv.text =
             if (currentHour == hoursList[0])
-                "Now"
+                context.getString(R.string.now)
             else
                 getDateHour(currentHour.dt)
 

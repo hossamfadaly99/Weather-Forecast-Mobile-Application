@@ -3,6 +3,7 @@ package com.fadalyis.weatherforecastapplication.Home
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -32,10 +33,13 @@ import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.network.ApiState
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
+import com.fadalyis.weatherforecastapplication.utils.Constants
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -57,6 +61,14 @@ class HomeFragment : Fragment() {
     var latitude: Double = 0.0
     var longitude: Double = 0.0
     lateinit var address: Address
+    lateinit var sharedPreferences: SharedPreferences
+    private lateinit var tempSymbol: String
+    private lateinit var windSymbol: String
+    lateinit var units: String
+    lateinit var lang: String
+    lateinit var temp: String
+    lateinit var windSetting: String
+    var windSpeedConverter: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,11 +78,41 @@ class HomeFragment : Fragment() {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         geocoder = Geocoder(requireContext(), Locale.getDefault())
+        sharedPreferences = requireActivity().getSharedPreferences(
+            Constants.SETTING_SHARED_PREF,
+            Context.MODE_PRIVATE
+        )
+        windSetting = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC).toString()
+        windSymbol = if (windSetting == Constants.METER_SEC) getString(R.string.meter_second) else getString(
+                    R.string.mile_hour)
+        lang = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH).toString()
+        Log.i("vkjtnvknrfgjk", "onCreateView: $lang")
+        temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS).toString()
+        when (temp) {
+            Constants.KELVIN -> {
+                units = Constants.STANDARD
+                tempSymbol = "K"
+                windSpeedConverter = if (windSetting == Constants.METER_SEC) 1.0 else 2.23693629
+            }
+            Constants.CELSIUS -> {
+                units = Constants.METRIC
+                tempSymbol = "°C"
+                windSpeedConverter = if (windSetting == Constants.METER_SEC) 1.0 else 2.23693629
+            }
+            else -> {
+                units = Constants.IMPERIAL
+                tempSymbol = "°F"
+                windSpeedConverter = if (windSetting == Constants.METER_SEC) 1/2.23693629 else 1.0
+            }
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
 
         initViewModel()
         binding.progressBar.visibility = View.VISIBLE
@@ -80,6 +122,7 @@ class HomeFragment : Fragment() {
             enhancedRefreshWeather()
             binding.swipeRefreshLayout.isRefreshing = false
         }
+        //setLanguage("en")
 //        binding.lastDateTv.setOnClickListener {
 //            enhancedRefreshWeather()
 //        }
@@ -222,10 +265,10 @@ class HomeFragment : Fragment() {
         )
 
         val current = result.data.current
-        mHourlyAdapter = HourlyAdapter(result.data.hourly.take(24))
+        mHourlyAdapter = HourlyAdapter(result.data.hourly.take(24), tempSymbol, requireContext())
         mHourlyLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        mDailyAdapter = DailyAdapter(result.data.daily)
+        mDailyAdapter = DailyAdapter(result.data.daily, tempSymbol, requireContext())
         mDailyLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
@@ -246,22 +289,19 @@ class HomeFragment : Fragment() {
 
         withContext(Dispatchers.Main) {
 
-            ////TODO check shared pref temp
-            val converter = -272.15 //0 //third transform
-
             binding.apply {
 
                 lastDateTv.text = getDateTime(current.dt.toString())
                 cityTv.text = address.locality ?: address.getAddressLine(0).split(',')[0]
-                tempTv.text = (current.temp + converter).toInt().toString() + "°"
+                tempTv.text = (current.temp).toInt().toString() + tempSymbol
                 weatherDescriptionTv.text = current.weather[0].description
                 Glide.with(requireContext())
                     .load("https://openweathermap.org/img/wn/${current.weather.get(0).icon}@4x.png")
                     .into(weatherIconHome)
                 tempHighTv.text =
-                    (result.data.daily.get(0).temp.max + converter).toInt().toString() + "°"
+                    (result.data.daily.get(0).temp.max).toInt().toString() + tempSymbol
                 tempLowTv.text =
-                    (result.data.daily.get(0).temp.min + converter).toInt().toString() + "°"
+                    (result.data.daily.get(0).temp.min).toInt().toString() + tempSymbol
                 hourlyRecyclerview.apply {
                     adapter = mHourlyAdapter
                     layoutManager = mHourlyLayoutManager
@@ -272,19 +312,26 @@ class HomeFragment : Fragment() {
                 }
                 cloudPercentageTv.text = "${current.clouds}%"
                 humidityPercentageTv.text = "${current.humidity}%"
-                //TODO add second converter
-                windSpeedTv.text = current.wind_speed.toString()
-                pressurecloudPercentageTv.text = "${current.pressure} hpa"
-                layout.background = if (current.dt > current.sunset /*|| current.dt < current.sunrise*/)
-                    ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
-                else
-                    ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)
 
+                windSpeedTv.text = "${convertWindSpeed(current.wind_speed)} $windSymbol"
+
+                pressurecloudPercentageTv.text = "${current.pressure} hpa"
+                layout.background =
+                    if (current.dt > current.sunset || current.dt < current.sunrise)
+                        ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
+                    else
+                        ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)
             }
         }
         withContext(Dispatchers.Main) {
             hideNoLocationViews()
         }
+    }
+
+    private fun convertWindSpeed(windSpeed: Double): String {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.DOWN
+        return df.format(windSpeed * windSpeedConverter)
     }
 
     private fun initViewModel() {
@@ -365,24 +412,21 @@ class HomeFragment : Fragment() {
             latitude = mLastLocation.latitude
             longitude = mLastLocation.longitude
 
+
+
             if (isOnline(requireContext())) {
                 Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $latitude, $longitude")
+                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
                 viewModel.getOnlineWeather(
                     latitude.toString(),
                     longitude.toString(),
-                    "en"
+                    lang,
+                    units
                 )
                 binding.progressBar.visibility = View.INVISIBLE
             } else {
                 Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE).show()
             }
-
-
-//            latitudeTV.text = mLastLocation.latitude.toString()
-//            longitudeTV.text = mLastLocation.longitude.toString()
-//            val address =
-//                geocoder.getFromLocation(mLastLocation.latitude, mLastLocation.longitude, 1)
-//            addressTV.text = address?.get(0)?.getAddressLine(0).toString()
         }
     }
 
@@ -434,6 +478,19 @@ class HomeFragment : Fragment() {
         } catch (e: Exception) {
             e.toString()
         }
+    }
+
+    private fun setLanguage(language: String) {
+        val metric = resources.displayMetrics
+        val configuration = resources.configuration
+        configuration.locale = Locale(language)
+        Locale.setDefault(Locale(language))
+        configuration.setLayoutDirection(Locale(language))
+        // update configuration
+        resources.updateConfiguration(configuration, metric)
+        // notify configuration
+        onConfigurationChanged(configuration)
+        requireActivity().recreate()
     }
 
 }

@@ -30,9 +30,10 @@ class Repository private constructor(
     override suspend fun getCurrentWeatherOnline(
         lat: String,
         lon: String,
-        lang: String
+        lang: String,
+        units: String
     ){
-        val response = remoteSource.getCurrentWeatherOnline(lat, lon, lang)
+        val response = remoteSource.getCurrentWeatherOnline(lat, lon, lang, units)
         Log.i("iecrhje", "getCurrentWeatherOnline: ${response.lat}")
         localSource.insertCurrentWeather(response)
     }

@@ -51,9 +51,10 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
     fun getOnlineWeather(
         lat: String,
         lon: String,
-        lang: String
+        lang: String,
+        units: String
     ) = viewModelScope.launch {
-        _repoInterface.getCurrentWeatherOnline(lat, lon, lang)
+        _repoInterface.getCurrentWeatherOnline(lat, lon, lang, units)
     }
 
 }

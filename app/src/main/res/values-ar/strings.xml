@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Weather</string>
+    <string name="home">الرئيسية</string>
+    <string name="favorite">المفضلة</string>
+    <string name="alerts">الإنذارات</string>
+    <string name="setting">الإعدادات</string>
+    <string name="open_location">قم بفتح إذن الموقع</string>
+    <string name="provide_the_location_permission">قم بفتح إذن الموقع</string>
+    <string name="settings">الإعدادات</string>
+    <string name="make_sure_location_permission_is_turned_on">تأكد من إذن الموقع</string>
+    <string name="oops_can_t_determine_your_location">للأسف، لا يمكن تحديد موقعك</string>
+    <string name="humidity">نسبة الرطوبة</string>
+    <string name="wind">سرعة الرياح</string>
+    <string name="cloud">نسبة السحاب</string>
+    <string name="pressure">الضغط</string>
+    <string name="_7_day_forecast">النشرة الإسبوعية</string>
+    <string name="h">"العليا "</string>
+    <string name="l">"السفلى "</string>
+    <string name="last_update">اخر تحديث:</string>
+    <string name="today">اليوم</string>
+    <string name="now">الآن</string>
+    <string name="meter_second">متر/ثانية</string>
+    <string name="mile_hour">ميل/ساعة</string>
+    <string name="language">اللغة</string>
+    <string name="english">الإنجليزية</string>
+    <string name="arabic">العربية</string>
+    <string name="location">الموقع</string>
+    <string name="gps">نظام تحديد المواقع</string>
+    <string name="map">الخريطة</string>
+    <string name="notifications">الإشعارات</string>
+    <string name="enable">تفعيل</string>
+    <string name="disable">إبطال</string>
+    <string name="wind_speed">سرعة الرياح</string>
+    <string name="meter_sec">متر / ثانية</string>
+    <string name="mile_hour_settings">ميل / ساعة</string>
+    <string name="temperature">درجة الحرارة</string>
+    <string name="celsius">سيليزيس</string>
+    <string name="kelvin">كيلفن</string>
+    <string name="fahrenheit">فهرنهايت</string>
+    <string name="no_items_added_yet">لا توجد مواقع محفوظة</string>
+</resources>

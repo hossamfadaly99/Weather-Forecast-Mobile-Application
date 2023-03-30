@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioGroup
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.fadalyis.weatherforecastapplication.databinding.FragmentSettingBinding
 import com.fadalyis.weatherforecastapplication.utils.Constants
 import java.util.*
@@ -121,7 +123,7 @@ class SettingFragment : Fragment() {
         }
     }
 
-    private fun setLanguage(language: String) {
+    private fun setLanguageOld(language: String) {
         val metric = resources.displayMetrics
         val configuration = resources.configuration
         configuration.locale = Locale(language)
@@ -132,5 +134,11 @@ class SettingFragment : Fragment() {
         // notify configuration
         onConfigurationChanged(configuration)
         requireActivity().recreate()
+    }
+
+    private fun setLanguage(language: String) {
+        val appLocale = LocaleListCompat.forLanguageTags(language)
+        AppCompatDelegate.setApplicationLocales(appLocale)
+
     }
 }

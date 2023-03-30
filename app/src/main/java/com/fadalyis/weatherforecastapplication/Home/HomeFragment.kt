@@ -42,6 +42,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 const val PERMISSION_ID = 5055
 const val TAG = "HOME_FRAGMENT_TAG"
@@ -60,7 +61,7 @@ class HomeFragment : Fragment() {
     private lateinit var noInternetSnackbar: Snackbar
     var latitude: Double = 0.0
     var longitude: Double = 0.0
-    lateinit var address: Address
+    var address: Address? = null
     lateinit var sharedPreferences: SharedPreferences
     private lateinit var tempSymbol: String
     private lateinit var windSymbol: String
@@ -83,8 +84,10 @@ class HomeFragment : Fragment() {
             Context.MODE_PRIVATE
         )
         windSetting = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC).toString()
-        windSymbol = if (windSetting == Constants.METER_SEC) getString(R.string.meter_second) else getString(
-                    R.string.mile_hour)
+        windSymbol =
+            if (windSetting == Constants.METER_SEC) getString(R.string.meter_second) else getString(
+                R.string.mile_hour
+            )
         lang = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH).toString()
         Log.i("vkjtnvknrfgjk", "onCreateView: $lang")
         temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS).toString()
@@ -102,7 +105,7 @@ class HomeFragment : Fragment() {
             else -> {
                 units = Constants.IMPERIAL
                 tempSymbol = "°F"
-                windSpeedConverter = if (windSetting == Constants.METER_SEC) 1/2.23693629 else 1.0
+                windSpeedConverter = if (windSetting == Constants.METER_SEC) 1 / 2.23693629 else 1.0
             }
         }
 
@@ -186,17 +189,19 @@ class HomeFragment : Fragment() {
                             Log.i(TAG, "enhancedRefreshWeather: network and location")
                             Log.i(
                                 "kvrntvjrjh",
-                                "latttttttt, longgggggggggg first: $latitude, $longitude"
+                                "latttttttt, longgggggggggg first 2: $latitude, $longitude"
                             )
 //                            viewModel.getOnlineWeather(
 //                                latitude.toString(),
 //                                longitude.toString(),
-//                                "en"
+//                                lang,
+//                                units
 //                            )
                             requestNewLocationData()
+                            //joinAll()
                             Log.i(
                                 "kvrntvjrjh",
-                                "latttttttt, longgggggggggg first: $latitude, $longitude"
+                                "latttttttt, longgggggggggg first 3: $latitude, $longitude"
                             )
                         } else {
                             //location, No network
@@ -220,7 +225,7 @@ class HomeFragment : Fragment() {
                 Log.i(TAG, "onViewCreated: collectLatest")
                 when (result) {
                     is ApiState.Success -> {
-                        Log.i(TAG, "refreshWeather: feee resultttt")
+                        Log.i("kvrntvjrjh", "refreshWeather: feee resultttt ${result.data}")
                         getWeather(result)
                         binding.progressBar.visibility = View.INVISIBLE
                     }
@@ -274,57 +279,90 @@ class HomeFragment : Fragment() {
 
         withContext(Dispatchers.IO) {
             try {
+                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg first 1: $latitude, $longitude")
+                Log.i(
+                    "kvrntvjrjh",
+                    "getWeather: lattttttttttttttttttttttttttttt longgg, ${result.data.lat}"
+                )
+
                 val gcd = geocoder.getFromLocation(
                     result.data.lat.toDouble(),
                     result.data.lon.toDouble(),
                     1
                 )
                 Log.i(TAG, "getWeather gcd: $gcd")
-                address = gcd?.get(0)!!
+
+                address = gcd?.get(0)
                 //Log.i(TAG, "getWeather address: $address")
             } catch (e: Exception) {
-//                e.printStackTrace()
+                e.printStackTrace()
             }
         }
 
+//        joinAll()
         withContext(Dispatchers.Main) {
 
             binding.apply {
 
-                lastDateTv.text = getDateTime(current.dt.toString())
-                cityTv.text = address.locality ?: address.getAddressLine(0).split(',')[0]
-                tempTv.text = (current.temp).toInt().toString() + tempSymbol
-                weatherDescriptionTv.text = current.weather[0].description
-                Glide.with(requireContext())
-                    .load("https://openweathermap.org/img/wn/${current.weather.get(0).icon}@4x.png")
-                    .into(weatherIconHome)
-                tempHighTv.text =
-                    (result.data.daily.get(0).temp.max).toInt().toString() + tempSymbol
-                tempLowTv.text =
-                    (result.data.daily.get(0).temp.min).toInt().toString() + tempSymbol
-                hourlyRecyclerview.apply {
-                    adapter = mHourlyAdapter
-                    layoutManager = mHourlyLayoutManager
-                }
-                dailyRecyclerview.apply {
-                    adapter = mDailyAdapter
-                    layoutManager = mDailyLayoutManager
-                }
-                cloudPercentageTv.text = "${current.clouds}%"
-                humidityPercentageTv.text = "${current.humidity}%"
+                while (true) {
+                    Log.i("kvrntvjrjh", "getWeather while: $address")
+                    if (address == null) {
+                        Log.i("kvrntvjrjh", "getWeather if null start: $address")
+                        val gcd = geocoder.getFromLocation(
+                            result.data.lat.toDouble(),
+                            result.data.lon.toDouble(),
+                            1
+                        )
+                        Log.i(TAG, "getWeather gcd: $gcd")
 
-                windSpeedTv.text = "${convertWindSpeed(current.wind_speed)} $windSymbol"
+                        if (gcd != null && gcd.size > 0)
+                            address = gcd[0]
+                        Log.i("kvrntvjrjh", "getWeather if null end: $address")
+                    } else {
+                        Log.i("kvrntvjrjh", "getWeather else null start: $address")
+                        lastDateTv.text = getDateTime(current.dt.toString())
+                        cityTv.text =
+                            (address!!.locality ?: address!!.getAddressLine(0).split(',')[0])
+                                ?: result.data.timezone
+                        tempTv.text = (current.temp).toInt().toString() + tempSymbol
+                        weatherDescriptionTv.text = current.weather[0].description
+                        Glide.with(requireContext())
+                            .load("https://openweathermap.org/img/wn /${current.weather.get(0).icon}@4x.png")
+                            .into(weatherIconHome)
+                        tempHighTv.text =
+                            (result.data.daily.get(0).temp.max).toInt().toString() + tempSymbol
+                        tempLowTv.text =
+                            (result.data.daily.get(0).temp.min).toInt().toString() + tempSymbol
+                        hourlyRecyclerview.apply {
+                            adapter = mHourlyAdapter
+                            layoutManager = mHourlyLayoutManager
+                        }
+                        dailyRecyclerview.apply {
+                            adapter = mDailyAdapter
+                            layoutManager = mDailyLayoutManager
+                        }
+                        cloudPercentageTv.text = "${current.clouds}%"
+                        humidityPercentageTv.text = "${current.humidity}%"
 
-                pressurecloudPercentageTv.text = "${current.pressure} hpa"
-                layout.background =
-                    if (current.dt > current.sunset || current.dt < current.sunrise)
-                        ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
-                    else
-                        ContextCompat.getDrawable(requireContext(), R.drawable.summy_sky_cloud)
+                        windSpeedTv.text = "${convertWindSpeed(current.wind_speed)} $windSymbol"
+
+                        pressurecloudPercentageTv.text = "${current.pressure} hpa"
+                        layout.background =
+                            if (current.dt > current.sunset || current.dt < current.sunrise)
+                                ContextCompat.getDrawable(requireContext(), R.drawable.sky_night)
+                            else
+                                ContextCompat.getDrawable(
+                                    requireContext(),
+                                    R.drawable.summy_sky_cloud
+                                )
+                    }
+                    hideNoLocationViews()
+                    Log.i("kvrntvjrjh", "getWeather else null end: $address ")
+                    break
+                }
+
             }
-        }
-        withContext(Dispatchers.Main) {
-            hideNoLocationViews()
+
         }
     }
 
@@ -394,8 +432,9 @@ class HomeFragment : Fragment() {
     private fun requestNewLocationData() {
         val mLocationRequest = LocationRequest()
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-        mLocationRequest.interval = 0
-        mLocationRequest.numUpdates = 1
+        mLocationRequest.interval = 10000
+//        mLocationRequest.fastestInterval = 10000
+//        mLocationRequest.numUpdates = 5
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
@@ -409,26 +448,35 @@ class HomeFragment : Fragment() {
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
             val mLastLocation: Location = locationResult.lastLocation
-            latitude = mLastLocation.latitude
-            longitude = mLastLocation.longitude
+
+            Log.i(TAG, "onLocationResult: $latitude, ${mLastLocation.latitude}")
+            Log.i(TAG, "onLocationResult condiiiitions: ${abs(latitude - mLastLocation.latitude)<0.1}, ${abs(longitude - mLastLocation.longitude) < 0.1}, ${latitude >0.1} ")
+
+            if (!(abs(latitude - mLastLocation.latitude) < 0.05 && abs(longitude - mLastLocation.longitude) < 0.05 && latitude >0.1)) {
+
+                latitude = mLastLocation.latitude
+                longitude = mLastLocation.longitude
+
+                if (  isOnline( requireContext())  ) {
+                    Log.i("kvrntvjrjh11", "latttttttt, longgggggggggg second: $latitude, $longitude")
+                    Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
+                    viewModel.getOnlineWeather(
+                        latitude.toString(),
+                        longitude.toString(),
+                        lang,
+                        units
+                    )
+                    binding.progressBar.visibility = View.INVISIBLE
+                } else {
+                    Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE)
+                        .show()
+                }
 
 
-
-            if (isOnline(requireContext())) {
-                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $latitude, $longitude")
-                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
-                viewModel.getOnlineWeather(
-                    latitude.toString(),
-                    longitude.toString(),
-                    lang,
-                    units
-                )
-                binding.progressBar.visibility = View.INVISIBLE
-            } else {
-                Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE).show()
             }
         }
     }
+
 
     private fun checkPermissions(): Boolean {
         return ActivityCompat.checkSelfPermission(
@@ -478,19 +526,6 @@ class HomeFragment : Fragment() {
         } catch (e: Exception) {
             e.toString()
         }
-    }
-
-    private fun setLanguage(language: String) {
-        val metric = resources.displayMetrics
-        val configuration = resources.configuration
-        configuration.locale = Locale(language)
-        Locale.setDefault(Locale(language))
-        configuration.setLayoutDirection(Locale(language))
-        // update configuration
-        resources.updateConfiguration(configuration, metric)
-        // notify configuration
-        onConfigurationChanged(configuration)
-        requireActivity().recreate()
     }
 
 }

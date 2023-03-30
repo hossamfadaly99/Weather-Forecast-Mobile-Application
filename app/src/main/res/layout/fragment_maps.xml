@@ -28,7 +28,7 @@
         android:background="@drawable/rounded_button_shape_white"
         android:drawableStart="@drawable/baseline_search_24"
         android:elevation="9dp"
-        android:hint="search"
+        android:hint="@string/search"
         android:inputType="text"
         android:maxLines="1"
         android:paddingStart="16dp"
@@ -64,17 +64,17 @@
             android:id="@+id/textView5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pick your location"
+            android:text="@string/pick_your_location"
             android:textColor="@color/black"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="16dp"
             android:textSize="16sp"
-            android:drawableEnd="@drawable/baseline_location_on_24"
             android:drawablePadding="8dp"
             app:layout_constraintBottom_toTopOf="@+id/confirm_location_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:drawableEndCompat="@drawable/baseline_location_on_24" />
 
         <Button
             android:id="@+id/confirm_location_btn"
@@ -82,7 +82,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:text="Confirm your location"
+            android:text="@string/confirm_your_location"
             android:paddingStart="36dp"
             android:paddingEnd="36dp"
             android:textAllCaps="false"
@@ -93,8 +93,5 @@
             app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

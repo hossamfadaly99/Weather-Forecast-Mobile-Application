@@ -33,13 +33,12 @@ class FavoriteAdapter(var favList: List<FavAddress>, var onAddressClickListener:
 
             deleteFavIcon.setOnClickListener {
                 MaterialAlertDialogBuilder(context)
-                    //.setTitle(context.resources.getString(R.string.title))
-                    .setTitle("Delete location")
-                    .setMessage("Are you sure you want to delete this location from favorites?")
-                    .setNeutralButton("Cancel") { dialog, which ->
+                    .setTitle(context.getString(R.string.delete_location))
+                    .setMessage(context.getString(R.string.delete_location_message))
+                    .setNeutralButton(context.getString(R.string.cancel)) { dialog, which ->
 
                     }
-                    .setPositiveButton("Delete") { dialog, which ->
+                    .setPositiveButton(context.getString(R.string.delete)) { dialog, which ->
                         onAddressClickListener.deleteAddress(currentFav)
                     }
                     .show()

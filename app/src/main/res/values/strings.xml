@@ -40,4 +40,11 @@
     <string name="kelvin">Kelvin</string>
     <string name="fahrenheit">Fahrenheit</string>
     <string name="no_items_added_yet">No items added yet</string>
+    <string name="delete_location">Delete location</string>
+    <string name="delete_location_message">Are you sure you want to delete this location from favorites?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="search">search</string>
+    <string name="pick_your_location">Pick your location</string>
+    <string name="confirm_your_location">Confirm your location</string>
 </resources>

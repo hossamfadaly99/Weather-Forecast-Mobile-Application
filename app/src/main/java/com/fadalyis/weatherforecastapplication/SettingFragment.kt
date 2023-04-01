@@ -139,6 +139,5 @@ class SettingFragment : Fragment() {
     private fun setLanguage(language: String) {
         val appLocale = LocaleListCompat.forLanguageTags(language)
         AppCompatDelegate.setApplicationLocales(appLocale)
-
     }
 }

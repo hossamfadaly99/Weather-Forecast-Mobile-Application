@@ -19,13 +19,6 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
         MutableStateFlow(ApiState.Loading)
     val weather: StateFlow<ApiState> = _weather
 
-
-//    fun saveCurrentWeather(currentWeather: CurrentResponse) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            _repoInterface.insertCurrentWeather(currentWeather)
-//        }
-//    }
-
     init {
         getSavedWeather()
     }

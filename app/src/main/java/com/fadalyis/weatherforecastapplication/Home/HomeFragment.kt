@@ -244,7 +244,8 @@ class HomeFragment : Fragment() {
                         }
                     }
                     else -> {
-                        Log.i("iecrhje", "timezone: error maybe no data $result")
+                        result  as ApiState.Failure
+                        Log.i("iecrhje", "timezone: error maybe no data ${result.msg}")
                         if (!(checkPermissions() && isLocationEnabled())) {
                             withContext(Dispatchers.Main) {
                                 handleLocationPermission()
@@ -299,7 +300,6 @@ class HomeFragment : Fragment() {
             }
         }
 
-//        joinAll()
         withContext(Dispatchers.Main) {
 
             binding.apply {

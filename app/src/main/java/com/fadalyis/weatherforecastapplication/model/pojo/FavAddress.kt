@@ -1,5 +1,4 @@
 package com.fadalyis.weatherforecastapplication.model.pojo
-
 import android.location.Address
 import android.os.Parcelable
 import androidx.room.Dao

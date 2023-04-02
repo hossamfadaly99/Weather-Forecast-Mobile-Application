@@ -35,8 +35,6 @@ class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel
                     _weather.value = ApiState.Success(it)
                 else {
                     _weather.value = ApiState.Failure(Throwable("no items in database - implemented throwable"))
-                    //TODO mesh fahem
-                    //_weather.value = ApiState.Failure(it)
                 }
             }
     }

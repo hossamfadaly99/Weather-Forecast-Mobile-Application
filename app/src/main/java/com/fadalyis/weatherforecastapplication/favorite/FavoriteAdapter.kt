@@ -43,6 +43,11 @@ class FavoriteAdapter(var favList: List<FavAddress>, var onAddressClickListener:
                     }
                     .show()
             }
+
+            favoriteCardView.setOnClickListener {
+                onAddressClickListener.viewWeatherData("${currentFav.lat},${currentFav.lon}")
+            }
+
         }
 
     }

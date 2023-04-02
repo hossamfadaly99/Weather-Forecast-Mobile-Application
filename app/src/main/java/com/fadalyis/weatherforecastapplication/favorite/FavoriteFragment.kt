@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentFavoriteBinding
 import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
+import com.fadalyis.weatherforecastapplication.favorite.FavoriteFragmentDirections.ActionFavoriteFragmentToHomeFragment
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
@@ -54,6 +55,7 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
         binding.floatingActionButton.setOnClickListener {
             Navigation.findNavController(view)
                 .navigate(R.id.action_favoriteFragment_to_mapsFragment)
+//            val a: ActionF = FavoriteFragmentDirections.actionFavoriteFragmentToMapsFragment()
         }
 
     }
@@ -122,5 +124,11 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
 
     override fun deleteAddress(address: FavAddress) {
         viewModel.deleteLocation(address)
+    }
+
+    override fun viewWeatherData(mapLatLon: String) {
+        val action: ActionFavoriteFragmentToHomeFragment = FavoriteFragmentDirections.actionFavoriteFragmentToHomeFragment()
+        action.mapLatLon = mapLatLon
+        Navigation.findNavController(requireView()).navigate(action)
     }
 }

@@ -25,8 +25,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.fadalyis.weatherforecastapplication.Home.HomeFragmentDirections.ActionHomeFragmentToMapsFragment
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentHomeBinding
 import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
@@ -83,13 +85,20 @@ class HomeFragment : Fragment() {
             Constants.SETTING_SHARED_PREF,
             Context.MODE_PRIVATE
         )
+        val locationSettings = sharedPreferences.getString(Constants.LOCATION, Constants.GPS).toString()
         windSetting = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC).toString()
         windSymbol =
             if (windSetting == Constants.METER_SEC) getString(R.string.meter_second) else getString(
                 R.string.mile_hour
             )
         lang = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH).toString()
-        Log.i("vkjtnvknrfgjk", "onCreateView: $lang")
+        Log.i("vkjtnvknrfgjk", "onCreateView: $locationSettings")
+
+//        if (locationSettings == Constants.MAP /* and args == null*/){
+//            val action: ActionHomeFragmentToMapsFragment = HomeFragmentDirections.actionHomeFragmentToMapsFragment()
+//            Navigation.findNavController(requireView()).navigate(action)
+//        }
+
         temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS).toString()
         when (temp) {
             Constants.KELVIN -> {
@@ -114,8 +123,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
 
         initViewModel()
         binding.progressBar.visibility = View.VISIBLE
@@ -221,36 +228,41 @@ class HomeFragment : Fragment() {
                 } else {
                 }
             }
-            viewModel.weather.collectLatest { result ->
-                Log.i(TAG, "onViewCreated: collectLatest")
-                when (result) {
-                    is ApiState.Success -> {
-                        Log.i("kvrntvjrjh", "refreshWeather: feee resultttt ${result.data}")
-                        getWeather(result)
-                        binding.progressBar.visibility = View.INVISIBLE
-                    }
-                    is ApiState.Loading -> {
-                        if (isOnline(requireContext())) {
-                            Log.i("iecrhje", "timezone: loading")
-                            binding.progressBar.visibility = View.VISIBLE
-                        } else {
-                            //TODO hide loading
-                            Log.i("iecrhje", "timezone: else loading")
-                            makeNoNetworkConnectionSnackbar()
-                            if (isLocationEnabled()) {
-                                noInternetSnackbar.show()
-                                binding.progressBar.visibility = View.INVISIBLE
-                            }
+            //observeWeatherData()
+        }
+    }
+
+    private suspend fun observeWeatherData() {
+        viewModel.weather.collectLatest { result ->
+            Log.i(TAG, "onViewCreated: collectLatest")
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+            when (result) {
+                is ApiState.Success -> {
+                    Log.i("kvrntvjrjh", "refreshWeather: feee resultttt ${result.data}")
+                    getWeather(result)
+                    binding.progressBar.visibility = View.INVISIBLE
+                }
+                is ApiState.Loading -> {
+                    if (isOnline(requireContext())) {
+                        Log.i("iecrhje", "timezone: loading")
+                        binding.progressBar.visibility = View.VISIBLE
+                    } else {
+                        //TODO hide loading
+                        Log.i("iecrhje", "timezone: else loading")
+                        makeNoNetworkConnectionSnackbar()
+                        if (isLocationEnabled()) {
+                            noInternetSnackbar.show()
+                            binding.progressBar.visibility = View.INVISIBLE
                         }
                     }
-                    else -> {
-                        result  as ApiState.Failure
-                        Log.i("iecrhje", "timezone: error maybe no data ${result.msg}")
-                        if (!(checkPermissions() && isLocationEnabled())) {
-                            withContext(Dispatchers.Main) {
-                                handleLocationPermission()
-                                binding.progressBar.visibility = View.INVISIBLE
-                            }
+                }
+                else -> {
+                    result as ApiState.Failure
+                    Log.i("iecrhje", "timezone: error maybe no data ${result.msg}")
+                    if (!(checkPermissions() && isLocationEnabled())) {
+                        withContext(Dispatchers.Main) {
+                            handleLocationPermission()
+                            binding.progressBar.visibility = View.INVISIBLE
                         }
                     }
                 }
@@ -389,7 +401,28 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        enhancedRefreshWeather()
+        var llong = arguments?.let { HomeFragmentArgs.fromBundle(it).mapLatLon }
+        Log.i(TAG, "onResume 1: $llong")
+        if (llong != null) {
+            Log.i(TAG, "onResume 2: $llong")
+            val favLongLat = llong.split(',')
+            latitude = favLongLat[0].toDouble()
+            longitude = favLongLat[1].toDouble()
+            requireArguments().clear()
+
+            viewModel.getOnlineWeather(
+                latitude.toString(),
+                longitude.toString(),
+                lang,
+                units
+            )
+        } else {
+            Log.i(TAG, "onResume 3: $llong")
+            enhancedRefreshWeather()
+        }
+        lifecycleScope.launch(Dispatchers.IO){
+            observeWeatherData()
+        }
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -450,15 +483,23 @@ class HomeFragment : Fragment() {
             val mLastLocation: Location = locationResult.lastLocation
 
             Log.i(TAG, "onLocationResult: $latitude, ${mLastLocation.latitude}")
-            Log.i(TAG, "onLocationResult condiiiitions: ${abs(latitude - mLastLocation.latitude)<0.1}, ${abs(longitude - mLastLocation.longitude) < 0.1}, ${latitude >0.1} ")
+            Log.i(
+                TAG,
+                "onLocationResult condiiiitions: ${abs(latitude - mLastLocation.latitude) < 0.1}, ${
+                    abs(longitude - mLastLocation.longitude) < 0.1
+                }, ${latitude > 0.1} "
+            )
 
-            if (!(abs(latitude - mLastLocation.latitude) < 0.05 && abs(longitude - mLastLocation.longitude) < 0.05 && latitude >0.1)) {
+//            if (!(abs(latitude - mLastLocation.latitude) < 0.05 && abs(longitude - mLastLocation.longitude) < 0.05 && latitude > 0.1)) {
 
                 latitude = mLastLocation.latitude
                 longitude = mLastLocation.longitude
 
-                if (  isOnline( requireContext())  ) {
-                    Log.i("kvrntvjrjh11", "latttttttt, longgggggggggg second: $latitude, $longitude")
+                if (isOnline(requireContext())) {
+                    Log.i(
+                        "kvrntvjrjh11",
+                        "latttttttt, longgggggggggg second: $latitude, $longitude"
+                    )
                     Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
                     viewModel.getOnlineWeather(
                         latitude.toString(),
@@ -473,7 +514,7 @@ class HomeFragment : Fragment() {
                 }
 
 
-            }
+//            }
         }
     }
 

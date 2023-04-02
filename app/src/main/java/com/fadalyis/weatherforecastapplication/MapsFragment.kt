@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
 import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModel

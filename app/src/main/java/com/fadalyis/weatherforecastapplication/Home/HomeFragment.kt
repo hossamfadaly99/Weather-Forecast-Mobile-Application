@@ -69,6 +69,7 @@ class HomeFragment : Fragment() {
     private lateinit var windSymbol: String
     lateinit var units: String
     lateinit var lang: String
+    lateinit var locationSettings: String
     lateinit var temp: String
     lateinit var windSetting: String
     var windSpeedConverter: Double = 0.0
@@ -85,18 +86,22 @@ class HomeFragment : Fragment() {
             Constants.SETTING_SHARED_PREF,
             Context.MODE_PRIVATE
         )
-        val locationSettings = sharedPreferences.getString(Constants.LOCATION, Constants.GPS).toString()
+
         windSetting = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC).toString()
         windSymbol =
             if (windSetting == Constants.METER_SEC) getString(R.string.meter_second) else getString(
                 R.string.mile_hour
             )
         lang = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH).toString()
-        Log.i("vkjtnvknrfgjk", "onCreateView: $locationSettings")
 
-//        if (locationSettings == Constants.MAP /* and args == null*/){
-//            val action: ActionHomeFragmentToMapsFragment = HomeFragmentDirections.actionHomeFragmentToMapsFragment()
-//            Navigation.findNavController(requireView()).navigate(action)
+        locationSettings = sharedPreferences.getString(Constants.LOCATION, Constants.GPS).toString()
+        //Log.i("vkjtnvknrfgjk", "onCreateView: $locationSettings")
+
+
+//        else if (locationSettings == Constants.MAP && prev != null){
+//            val favLongLat = prev.split(',')
+//            latitude = favLongLat[0].toDouble()
+//            longitude = favLongLat[1].toDouble()
 //        }
 
         temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS).toString()
@@ -129,7 +134,8 @@ class HomeFragment : Fragment() {
         getLastLocation()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            enhancedRefreshWeather()
+            //fetchingWeatherWithGPS()
+            fetchingData()
             binding.swipeRefreshLayout.isRefreshing = false
         }
         //setLanguage("en")
@@ -183,7 +189,7 @@ class HomeFragment : Fragment() {
         binding.progressBar.visibility = View.VISIBLE
     }
 
-    private fun enhancedRefreshWeather() {
+    private fun fetchingWeatherWithGPS() {
         Log.i(TAG, "enhancedRefreshWeather: ")
         lifecycleScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
@@ -401,13 +407,25 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+
+        fetchingData()
+    }
+
+    private fun fetchingData() {
         var llong = arguments?.let { HomeFragmentArgs.fromBundle(it).mapLatLon }
-        Log.i(TAG, "onResume 1: $llong")
+
+        if (locationSettings == Constants.MAP && llong == null) {
+            val action: ActionHomeFragmentToMapsFragment =
+                HomeFragmentDirections.actionHomeFragmentToMapsFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
+
         if (llong != null) {
-            Log.i(TAG, "onResume 2: $llong")
+
             val favLongLat = llong.split(',')
             latitude = favLongLat[0].toDouble()
             longitude = favLongLat[1].toDouble()
+
             requireArguments().clear()
 
             viewModel.getOnlineWeather(
@@ -417,10 +435,11 @@ class HomeFragment : Fragment() {
                 units
             )
         } else {
-            Log.i(TAG, "onResume 3: $llong")
-            enhancedRefreshWeather()
+            fetchingWeatherWithGPS()
         }
-        lifecycleScope.launch(Dispatchers.IO){
+
+
+        lifecycleScope.launch(Dispatchers.IO) {
             observeWeatherData()
         }
     }
@@ -492,26 +511,26 @@ class HomeFragment : Fragment() {
 
 //            if (!(abs(latitude - mLastLocation.latitude) < 0.05 && abs(longitude - mLastLocation.longitude) < 0.05 && latitude > 0.1)) {
 
-                latitude = mLastLocation.latitude
-                longitude = mLastLocation.longitude
+            latitude = mLastLocation.latitude
+            longitude = mLastLocation.longitude
 
-                if (isOnline(requireContext())) {
-                    Log.i(
-                        "kvrntvjrjh11",
-                        "latttttttt, longgggggggggg second: $latitude, $longitude"
-                    )
-                    Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
-                    viewModel.getOnlineWeather(
-                        latitude.toString(),
-                        longitude.toString(),
-                        lang,
-                        units
-                    )
-                    binding.progressBar.visibility = View.INVISIBLE
-                } else {
-                    Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE)
-                        .show()
-                }
+            if (isOnline(requireContext())) {
+                Log.i(
+                    "kvrntvjrjh11",
+                    "latttttttt, longgggggggggg second: $latitude, $longitude"
+                )
+                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
+                viewModel.getOnlineWeather(
+                    latitude.toString(),
+                    longitude.toString(),
+                    lang,
+                    units
+                )
+                binding.progressBar.visibility = View.INVISIBLE
+            } else {
+                Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE)
+                    .show()
+            }
 
 
 //            }

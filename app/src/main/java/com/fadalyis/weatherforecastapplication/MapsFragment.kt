@@ -16,6 +16,7 @@ import android.widget.ImageButton
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import com.example.navigationcomponent.MapsFragmentDirections.ActionMapsFragmentToHomeFragment
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
 import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModel
@@ -91,29 +92,49 @@ class MapsFragment : Fragment() {
 
         initViewModel()
 
+        val prevDestination = arguments?.let { MapsFragmentArgs.fromBundle(it).previousDestination }
+
         imgBtn = view.findViewById(R.id.back_img_btn)
         confirmLocationBtn = view.findViewById(R.id.confirm_location_btn)
         searchEdt = view.findViewById(R.id.search_editText)
 
         imgBtn.setOnClickListener {
 
-            Navigation.findNavController(view).navigate(R.id.action_mapsFragment_to_favoriteFragment)
-            bottomNavigationView.visibility = View.VISIBLE
+            if (prevDestination == "home"){
+                //TODO handle back to empty fragment or remove back btn
+                val action: ActionMapsFragmentToHomeFragment = MapsFragmentDirections.actionMapsFragmentToHomeFragment()
+                action.mapLatLon = "${latLng.latitude},${latLng.longitude}"
+                Navigation.findNavController(requireView()).navigate(action)
+            }else if (prevDestination == "favorite"){
+                Navigation.findNavController(view).navigate(R.id.action_mapsFragment_to_favoriteFragment)
+            }
+
+
+
+            //bottomNavigationView.visibility = View.VISIBLE
         }
         confirmLocationBtn.setOnClickListener {
+
 
             latLng = markerOptions.position
             val address = geocoder.getFromLocation(latLng.latitude, latLng.longitude , 1)
             if (address != null)
                 city = address[0].locality ?: address[0].getAddressLine(0).split(',')[0]
 
-
             val f1 = FavAddress(latLng.latitude, latLng.longitude, city , 0)
-            viewModel.saveLocation(f1)
 
 
-            Navigation.findNavController(view).navigate(R.id.action_mapsFragment_to_favoriteFragment)
-            bottomNavigationView.visibility = View.VISIBLE
+
+            if (prevDestination == "home"){
+                val action: ActionMapsFragmentToHomeFragment = MapsFragmentDirections.actionMapsFragmentToHomeFragment()
+                action.mapLatLon = "${latLng.latitude},${latLng.longitude}"
+                Navigation.findNavController(requireView()).navigate(action)
+            }else if (prevDestination == "favorite"){
+                viewModel.saveLocation(f1)
+                Navigation.findNavController(view).navigate(R.id.action_mapsFragment_to_favoriteFragment)
+            }
+
+
         }
 
         searchEdt.setOnEditorActionListener { v, actionId, event ->
@@ -155,5 +176,8 @@ class MapsFragment : Fragment() {
 
     }
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bottomNavigationView.visibility = View.VISIBLE
+    }
 }

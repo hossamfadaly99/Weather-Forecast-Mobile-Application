@@ -3,11 +3,13 @@ package com.fadalyis.weatherforecastapplication.model
 import android.location.Address
 import android.util.Log
 import com.fadalyis.weatherforecastapplication.db.LocalSource
+import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.RemoteSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import java.util.*
 
 
 class Repository private constructor(
@@ -57,5 +59,17 @@ class Repository private constructor(
 
     override suspend fun getFavLocations(): Flow<List<FavAddress>> {
         return  localSource.getFavLocations()
+    }
+
+    override suspend fun getAlerts(): Flow<List<AlertSchedule>> {
+        return localSource.getFAlerts()
+    }
+
+    override suspend fun insertAlert(alert: AlertSchedule) {
+        localSource.insertAlert(alert)
+    }
+
+    override suspend fun deleteAlert(id: String) {
+        localSource.deleteAlert(id)
     }
 }

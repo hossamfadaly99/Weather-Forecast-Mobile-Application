@@ -17,9 +17,13 @@ object Constants {
     const val KELVIN = "KELVIN"
     const val FAHRENHEIT = "FAHRENHEIT"
     const val SETTING_SHARED_PREF = "SETTING_SHARED_PREF"
+
     const val STANDARD = "standard"
     const val METRIC = "metric"
     const val IMPERIAL = "imperial"
+
+    const val FAILURE_REASON = "FAILURE_REASON"
+    const val WeatherFetchingWorker_TAG = "WeatherFetchingWorker_TAG"
 
 
 }

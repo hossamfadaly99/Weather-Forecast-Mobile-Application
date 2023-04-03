@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_out_layout"
+    android:layout_width="match_parent"
+    android:background="@drawable/rounded_button_shape_light_blue"
+android:elevation="9dp"
+    android:padding="16dp"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/my_out_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/baseline_cloud_24"
+        android:drawablePadding="16dp"
+        android:fontFamily="@font/pragmatica_bold"
+        android:text="Weather Condition"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/description_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Weather is fine, no alerts for the scheduled time period"
+        android:textColor="#303030"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/my_out_tv"
+        app:layout_constraintTop_toBottomOf="@+id/my_out_tv" />
+
+    <Button
+        android:id="@+id/dismiss_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button_shape"
+        android:layout_marginTop="24dp"
+        android:text="Dismiss"
+        android:textColor="@color/white"
+        android:paddingHorizontal="24dp"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/description_tv" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

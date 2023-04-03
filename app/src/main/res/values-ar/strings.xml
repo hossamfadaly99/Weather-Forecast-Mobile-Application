@@ -46,4 +46,8 @@
     <string name="search">بحث</string>
     <string name="pick_your_location">إختر موقعك</string>
     <string name="confirm_your_location">تأكيد الموقع</string>
+    <string name="notification">إشعار</string>
+    <string name="alarm">منبه</string>
+    <string name="delete_alert">إزالة الإنذار</string>
+    <string name="delete_alert_message">هل انت متأكد من إزالة الإنذار؟</string>
 </resources>

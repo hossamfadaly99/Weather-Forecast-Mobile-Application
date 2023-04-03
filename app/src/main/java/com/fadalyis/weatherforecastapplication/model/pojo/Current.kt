@@ -10,7 +10,7 @@ data class Current(
     val sunrise: String,
     val sunset: String,
     val temp: Double,
-    val uvi: Int,
+    val uvi: String,
     val visibility: Int,
     val weather: List<Weather>,
     val wind_deg: Int,

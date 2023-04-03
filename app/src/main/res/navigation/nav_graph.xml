@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/alertFragment"
-        android:name="com.fadalyis.weatherforecastapplication.AlertFragment"
+        android:name="com.fadalyis.weatherforecastapplication.alert.AlertFragment"
         android:label="fragment_alert"
         tools:layout="@layout/fragment_alert" />
     <fragment

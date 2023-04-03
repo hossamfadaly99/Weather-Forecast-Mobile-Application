@@ -325,17 +325,19 @@ class HomeFragment : Fragment() {
                 while (true) {
                     Log.i("kvrntvjrjh", "getWeather while: $address")
                     if (address == null) {
-                        Log.i("kvrntvjrjh", "getWeather if null start: $address")
-                        val gcd = geocoder.getFromLocation(
-                            result.data.lat.toDouble(),
-                            result.data.lon.toDouble(),
-                            1
-                        )
-                        Log.i(TAG, "getWeather gcd: $gcd")
+                        withContext(Dispatchers.IO) {
+                            Log.i("kvrntvjrjh", "getWeather if null start: $address")
+                            val gcd = geocoder.getFromLocation(
+                                result.data.lat.toDouble(),
+                                result.data.lon.toDouble(),
+                                1
+                            )
+                            Log.i(TAG, "getWeather gcd: $gcd")
 
-                        if (gcd != null && gcd.size > 0)
-                            address = gcd[0]
-                        Log.i("kvrntvjrjh", "getWeather if null end: $address")
+                            if (gcd != null && gcd.size > 0)
+                                address = gcd[0]
+                            Log.i("kvrntvjrjh", "getWeather if null end: $address")
+                        }
                     } else {
                         Log.i("kvrntvjrjh", "getWeather else null start: $address")
                         lastDateTv.text = getDateTime(current.dt.toString())

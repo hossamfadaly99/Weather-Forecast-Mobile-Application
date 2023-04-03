@@ -7,5 +7,4 @@ import java.util.UUID
 interface OnAlertClickListener {
     fun deleteAlert(id: String)
 
-    //fun viewWeatherData(mapLatLon: String)
 }

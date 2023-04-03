@@ -26,7 +26,6 @@ class AlertAdapter(var alertList: List<AlertSchedule>, var onAlertClickListener:
         binding = ItemAlertBinding.inflate(inflater, parent, false)
 //        fullFormat = SimpleDateFormat("dd MMM, yyyy - hh:mm a")
         fullFormat = SimpleDateFormat("dd MMM - hh:mm a")
-//        fullFormat = SimpleDateFormat("dd MMM - hh:mm a")
         return ViewHolder(binding)
     }
 

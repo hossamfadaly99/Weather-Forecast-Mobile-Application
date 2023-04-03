@@ -37,9 +37,11 @@ class WeatherFetchingWorker(
 ) : CoroutineWorker(context, workParams) {
     override suspend fun doWork(): Result {
         try {
-
             val inputData = inputData
             val alertType = inputData.getString("alertType")
+
+            //get endDate and id from input data and check then cancel
+            //WorkManager.getInstance(context).cancelWorkById()
 
             val apiInstance = RetrofitHelper.getInstance().create(CurrentWeatherService::class.java)
 

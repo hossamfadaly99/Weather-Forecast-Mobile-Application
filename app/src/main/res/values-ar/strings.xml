@@ -50,4 +50,6 @@
     <string name="alarm">منبه</string>
     <string name="delete_alert">إزالة الإنذار</string>
     <string name="delete_alert_message">هل انت متأكد من إزالة الإنذار؟</string>
+    <string name="no_locations_added_yet">لا يوجد مواقع محفوظة حتى الان</string>
+    <string name="no_alerts_added_yet">لا يوجد إنذارات حتى الان</string>
 </resources>

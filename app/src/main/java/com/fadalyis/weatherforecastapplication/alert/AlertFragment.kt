@@ -61,6 +61,8 @@ class AlertFragment : Fragment(), OnAlertClickListener {
     private lateinit var startDay: TextView
     private lateinit var endDay: TextView
     private lateinit var saveBtn: Button
+    private lateinit var startCard: ConstraintLayout
+    private lateinit var endCard: ConstraintLayout
     private lateinit var notificationRadioBtn: RadioButton
     private lateinit var alarmRadioBtn: RadioButton
     private lateinit var alertType: String
@@ -95,26 +97,46 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         setupAlertRecyclerView()
         observeAlertState()
 
-        dialog = Dialog(requireContext())
-        dialog.setContentView(R.layout.alert_dialog)
-        saveBtn = dialog.findViewById(R.id.save_btn)
-        val startCard = dialog.findViewById<ConstraintLayout>(R.id.date_start_constraintLayout)
-        val endCard = dialog.findViewById<ConstraintLayout>(R.id.date_end_constraintLayout)
-        startTime = dialog.findViewById(R.id.alert_start_time_tv)
-        endTime = dialog.findViewById(R.id.alert_end_time_tv)
-        startDay = dialog.findViewById(R.id.alert_start_day_tv)
-        endDay = dialog.findViewById(R.id.alert_end_day_tv)
-        notificationRadioBtn = dialog.findViewById(R.id.notification_radio_btn)
-        alarmRadioBtn = dialog.findViewById(R.id.alarm_radio_btn)
+        initAlertDialog()
+        initStartEndDate()
 
 
-        var myCalendar = Calendar.getInstance()
 
         binding.alertFab.setOnClickListener {
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog.show()
         }
 
+        saveBtn.setOnClickListener {
+            determineAlertType()
+        }
+
+        startCard.setOnClickListener {
+            showDatePicker(startDay, startTime, "start")
+        }
+
+        endCard.setOnClickListener {
+            showDatePicker(endDay, endTime, "end")
+        }
+    }
+
+    private fun determineAlertType() {
+        if (alarmRadioBtn.isChecked) {
+            alertType = "Alarm"
+            if (Settings.canDrawOverlays(context)) {
+                addAlert()
+            } else {
+                checkDrawOverPermission()
+            }
+        } else if (notificationRadioBtn.isChecked) {
+            alertType = "Notification"
+            createNotificationChannel()
+            addAlert()
+        }
+    }
+
+    private fun initStartEndDate() {
+        var myCalendar = Calendar.getInstance()
         var calendarDate = myCalendar.time
         val dayFormatter = SimpleDateFormat("dd MMM, yyyy ")
         val timeFormatter = SimpleDateFormat("HH:mm")
@@ -129,35 +151,24 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         endTime.text = timeFormatter.format(calendarDate)
 
         fullEndDate = fullFormat.parse(endDay.text.toString() + endTime.text.toString())
-
-        saveBtn.setOnClickListener {
-
-            alertType = if (notificationRadioBtn.isChecked) "Notification" else "Alarm"
-
-            if (alarmRadioBtn.isChecked) {
-                checkDrawOverPermission()
-                if (Settings.canDrawOverlays(context)) {
-                    addAlert(alertType)
-                } else {
-                    checkDrawOverPermission()
-                }
-            }else if (notificationRadioBtn.isChecked){
-                createNotificationChannel()
-                addAlert(alertType)
-            }
-        }
-
-        startCard.setOnClickListener {
-            showDatePicker(startDay, startTime, "start")
-        }
-
-        endCard.setOnClickListener {
-            showDatePicker(endDay, endTime, "end")
-        }
     }
 
-    private fun addAlert(alertType: String) {
-        val id = startWorkManager(alertType)
+    private fun initAlertDialog() {
+        dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.alert_dialog)
+        saveBtn = dialog.findViewById(R.id.save_btn)
+        startCard = dialog.findViewById(R.id.date_start_constraintLayout)
+        endCard = dialog.findViewById(R.id.date_end_constraintLayout)
+        startTime = dialog.findViewById(R.id.alert_start_time_tv)
+        endTime = dialog.findViewById(R.id.alert_end_time_tv)
+        startDay = dialog.findViewById(R.id.alert_start_day_tv)
+        endDay = dialog.findViewById(R.id.alert_end_day_tv)
+        notificationRadioBtn = dialog.findViewById(R.id.notification_radio_btn)
+        alarmRadioBtn = dialog.findViewById(R.id.alarm_radio_btn)
+    }
+
+    private fun addAlert() {
+        val id = startWorkManager()
 
         dialog.dismiss()
 
@@ -285,55 +296,40 @@ class AlertFragment : Fragment(), OnAlertClickListener {
             saveBtn.isEnabled = true
     }
 
-    private fun startWorkManager(alertType: String): UUID {
+    private fun startWorkManager(): UUID {
 
-        val request = PeriodicWorkRequestBuilder<WeatherFetchingWorker>(
-            1, TimeUnit.DAYS
-        )
-            .addTag(Constants.WeatherFetchingWorker_TAG)
-            .setInputData(
-                workDataOf(
-                    "alertType" to alertType
-                )
-            )
-            .setInitialDelay(
-                fullStartDate.time - Calendar.getInstance().timeInMillis,
-                TimeUnit.MILLISECONDS
-            )
-            .build()
+        val request = buildPeriodicWorkRequest()
 
         workManager.enqueue(
             request
         )
 
-        //save request.Id with start and end date
-        //        cancel request
-        //        workManager.cancelWorkById()
+        observeWorkState(request)
+        return request.id
+    }
 
+    private fun buildPeriodicWorkRequest() = PeriodicWorkRequestBuilder<WeatherFetchingWorker>(
+        1, TimeUnit.DAYS
+    )
+        .addTag(Constants.WeatherFetchingWorker_TAG)
+        .setInputData(
+            workDataOf(
+                "alertType" to alertType
+            )
+        )
+        .setInitialDelay(
+            fullStartDate.time - Calendar.getInstance().timeInMillis,
+            TimeUnit.MILLISECONDS
+        )
+        .build()
+
+    private fun observeWorkState(request: PeriodicWorkRequest) {
         workManager.getWorkInfosByTagLiveData(Constants.WeatherFetchingWorker_TAG)
             .observe(requireActivity()) { workInfos ->
                 val myInfos = workInfos?.find { it.id == request.id }
                 when (myInfos?.state) {
                     WorkInfo.State.SUCCEEDED -> {
                         Log.i("Alerts_Fragment_TAG", "Congrats a success")
-
-                        /*                        val alertObj = Gson().fromJson(
-                                                    myInfos.outputData.getString("response"),
-                                                    Alert::class.java
-                                                )
-
-                                                if (alertObj != null) {
-                                                    binding.alllTv.text = alertObj.description
-                                                    var weatherConditionList = alertObj.description.split("...")
-                        //                            Log.i("Alerts_Fragment_TAG", "list size: ${weatherConditionList.size}, first: ${weatherConditionList[0]}, second: ${weatherConditionList[1]}")
-                                                    var firstWeatherCondition = if (weatherConditionList[0].isNotEmpty() && weatherConditionList[0].isNotBlank()) weatherConditionList[0] else weatherConditionList[1]
-                                                    createNotification(requireContext(), firstWeatherCondition)
-                        //                            createAlarm(requireContext(), firstWeatherCondition)
-                                                } else {
-                                                    binding.alllTv.text = "nullll"
-                                                    createNotification(requireContext(), "Today is fine don't worry")
-                                                }*/
-
                     }
                     WorkInfo.State.RUNNING -> {
                         Log.i("Alerts_Fragment_TAG", "processing your request ")
@@ -347,7 +343,6 @@ class AlertFragment : Fragment(), OnAlertClickListener {
                     }
                 }
             }
-        return request.id
     }
 
     override fun deleteAlert(id: String) {

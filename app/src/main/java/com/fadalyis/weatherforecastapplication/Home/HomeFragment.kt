@@ -31,7 +31,7 @@ import com.bumptech.glide.Glide
 import com.fadalyis.weatherforecastapplication.Home.HomeFragmentDirections.ActionHomeFragmentToMapsFragment
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentHomeBinding
-import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
+import com.fadalyis.weatherforecastapplication.db.*
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.network.ApiState
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
@@ -395,10 +395,23 @@ class HomeFragment : Fragment() {
     }
 
     private fun initViewModel() {
+         val weatherDao: WeatherDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getWeatherDao()
+        }
+         val favoriteDao: FavoriteDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getFavoriteDao()
+        }
+         val alertDao: AlertDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getAlertDao()
+        }
+
         viewModelFactory = HomeViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(requireContext())
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
             )
         )
 

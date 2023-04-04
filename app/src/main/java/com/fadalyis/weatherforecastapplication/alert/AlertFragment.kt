@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentAlertBinding
-import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
+import com.fadalyis.weatherforecastapplication.db.*
 import com.fadalyis.weatherforecastapplication.favorite.TAG
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
@@ -227,10 +227,22 @@ class AlertFragment : Fragment(), OnAlertClickListener {
     }
 
     private fun initViewModel() {
+        val weatherDao: WeatherDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getWeatherDao()
+        }
+        val favoriteDao: FavoriteDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getFavoriteDao()
+        }
+        val alertDao: AlertDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getAlertDao()
+        }
         viewModelFactory = AlertViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(requireContext())
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
             )
         )
 
@@ -330,7 +342,7 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         )
         .setConstraints(
             Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.METERED)
+                .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
         )
         .setInitialDelay(

@@ -42,9 +42,6 @@ class WeatherFetchingWorker(
             val alertType = inputData.getString("alertType")
             val endDate = inputData.getLong("endDate", 1L)
 
-            //get endDate and id from input data and check then cancel
-            //WorkManager.getInstance(context).cancelWorkById()
-
             val sharedPreferences = context.getSharedPreferences(
                 Constants.SETTING_SHARED_PREF,
                 Context.MODE_PRIVATE

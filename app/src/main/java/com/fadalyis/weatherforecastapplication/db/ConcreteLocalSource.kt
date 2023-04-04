@@ -10,20 +10,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import java.util.*
 
-class ConcreteLocalSource(context: Context) : LocalSource {
-
-    private val weatherDao: WeatherDAO by lazy {
-        val db = AppDataBase.getInstance(context)
-        db.getWeatherDao()
-    }
-    private val favoriteDao: FavoriteDAO by lazy {
-        val db = AppDataBase.getInstance(context)
-        db.getFavoriteDao()
-    }
-    private val alertDao: AlertDAO by lazy {
-        val db = AppDataBase.getInstance(context)
-        db.getAlertDao()
-    }
+class ConcreteLocalSource(
+    var weatherDao: WeatherDAO,
+    var favoriteDao: FavoriteDAO,
+    var alertDao: AlertDAO
+) : LocalSource {
 
     override suspend fun insertCurrentWeather(currentWeather: CurrentResponse) {
         weatherDao.deletePreviousWeather()
@@ -43,7 +34,7 @@ class ConcreteLocalSource(context: Context) : LocalSource {
     }
 
     override suspend fun getFavLocations(): Flow<List<FavAddress>> {
-        return  favoriteDao.getFavLocations()
+        return favoriteDao.getFavLocations()
     }
 
     override suspend fun insertAlert(alert: AlertSchedule) {

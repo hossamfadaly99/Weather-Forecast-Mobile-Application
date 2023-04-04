@@ -18,7 +18,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.navigationcomponent.MapsFragmentDirections.ActionMapsFragmentToHomeFragment
 import com.fadalyis.weatherforecastapplication.R
-import com.fadalyis.weatherforecastapplication.db.ConcreteLocalSource
+import com.fadalyis.weatherforecastapplication.db.*
 import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModel
 import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModelFactory
 import com.fadalyis.weatherforecastapplication.model.Repository
@@ -162,10 +162,22 @@ class MapsFragment : Fragment() {
     }
 
     private fun initViewModel() {
+        val weatherDao: WeatherDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getWeatherDao()
+        }
+        val favoriteDao: FavoriteDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getFavoriteDao()
+        }
+        val alertDao: AlertDAO by lazy {
+            val db = AppDataBase.getInstance(requireContext())
+            db.getAlertDao()
+        }
         viewModelFactory = FavoriteViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(requireContext())
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
             )
         )
 

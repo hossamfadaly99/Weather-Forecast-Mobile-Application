@@ -23,14 +23,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
-        android:text="33/20"
+        android:text="20/33"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        app:drawableEndCompat="@drawable/baseline_arrow_drop_down_24"
-        app:drawableStartCompat="@drawable/baseline_arrow_drop_up_24"
+        app:drawableLeftCompat="@drawable/baseline_arrow_drop_down_24"
         app:layout_constraintBottom_toBottomOf="@+id/daily_icon_imageview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/daily_icon_imageview" />
+        app:layout_constraintTop_toTopOf="@+id/daily_icon_imageview"
+        app:drawableRightCompat="@drawable/baseline_arrow_drop_up_24" />
 
     <TextView
         android:id="@+id/daily_main_tv"

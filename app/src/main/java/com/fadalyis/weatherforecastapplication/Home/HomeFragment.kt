@@ -63,8 +63,9 @@ class HomeFragment : Fragment() {
     private lateinit var noInternetSnackbar: Snackbar
     var latitude: Double = 0.0
     var longitude: Double = 0.0
-    var address: Address? = null
+//    var address: Address? = null
     lateinit var sharedPreferences: SharedPreferences
+    lateinit var editor: SharedPreferences.Editor
     private lateinit var tempSymbol: String
     private lateinit var windSymbol: String
     lateinit var units: String
@@ -86,6 +87,7 @@ class HomeFragment : Fragment() {
             Constants.SETTING_SHARED_PREF,
             Context.MODE_PRIVATE
         )
+        editor = sharedPreferences.edit()
 
         windSetting = sharedPreferences.getString(Constants.WIND, Constants.METER_SEC).toString()
         windSymbol =
@@ -95,14 +97,6 @@ class HomeFragment : Fragment() {
         lang = sharedPreferences.getString(Constants.LANGUAGE, Constants.ENGLISH).toString()
 
         locationSettings = sharedPreferences.getString(Constants.LOCATION, Constants.GPS).toString()
-        //Log.i("vkjtnvknrfgjk", "onCreateView: $locationSettings")
-
-
-//        else if (locationSettings == Constants.MAP && prev != null){
-//            val favLongLat = prev.split(',')
-//            latitude = favLongLat[0].toDouble()
-//            longitude = favLongLat[1].toDouble()
-//        }
 
         temp = sharedPreferences.getString(Constants.TEMPERATURE, Constants.CELSIUS).toString()
         when (temp) {
@@ -148,11 +142,11 @@ class HomeFragment : Fragment() {
     private fun makeNoNetworkConnectionSnackbar() {
         noInternetSnackbar = Snackbar.make(
             binding.coordinator,
-            "No internet connection!",
+            getString(R.string.no_internet_connection),
             Snackbar.LENGTH_INDEFINITE
         )
             .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE)
-            .setAction("Setting") {
+            .setAction(R.string.settings) {
                 val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
                 startActivity(intent)
                 noInternetSnackbar.dismiss()
@@ -178,6 +172,8 @@ class HomeFragment : Fragment() {
         binding.settingButton.visibility = View.VISIBLE
 
         binding.progressBar.visibility = View.INVISIBLE
+        binding.myConstraintLayout.visibility = View.INVISIBLE
+        binding.layout.setBackgroundResource(0)
     }
 
     private fun hideNoLocationViews() {
@@ -187,9 +183,15 @@ class HomeFragment : Fragment() {
         binding.settingButton.visibility = View.GONE
 
         binding.progressBar.visibility = View.VISIBLE
+        binding.myConstraintLayout.visibility = View.VISIBLE
+        binding.layout.setBackgroundResource(R.drawable.summy_sky_cloud)
     }
 
     private fun fetchingWeatherWithGPS() {
+        if (!isOnline(requireContext())){
+            makeNoNetworkConnectionSnackbar()
+            noInternetSnackbar.show()
+        }
         Log.i(TAG, "enhancedRefreshWeather: ")
         lifecycleScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
@@ -296,54 +298,54 @@ class HomeFragment : Fragment() {
         mDailyLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
-        withContext(Dispatchers.IO) {
-            try {
-                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg first 1: $latitude, $longitude")
-                Log.i(
-                    "kvrntvjrjh",
-                    "getWeather: lattttttttttttttttttttttttttttt longgg, ${result.data.lat}"
-                )
-
-                val gcd = geocoder.getFromLocation(
-                    result.data.lat.toDouble(),
-                    result.data.lon.toDouble(),
-                    1
-                )
-                Log.i(TAG, "getWeather gcd: $gcd")
-
-                address = gcd?.get(0)
-                //Log.i(TAG, "getWeather address: $address")
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+//        withContext(Dispatchers.IO) {
+//            try {
+//                Log.i("kvrntvjrjh", "latttttttt, longgggggggggg first 1: $latitude, $longitude")
+//                Log.i(
+//                    "kvrntvjrjh",
+//                    "getWeather: lattttttttttttttttttttttttttttt longgg, ${result.data.lat}"
+//                )
+//
+//                val gcd = geocoder.getFromLocation(
+//                    result.data.lat.toDouble(),
+//                    result.data.lon.toDouble(),
+//                    1
+//                )
+//                Log.i(TAG, "getWeather gcd: $gcd")
+//
+//                address = gcd?.get(0)
+//                //Log.i(TAG, "getWeather address: $address")
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
 
         withContext(Dispatchers.Main) {
 
             binding.apply {
 
-                while (true) {
-                    Log.i("kvrntvjrjh", "getWeather while: $address")
-                    if (address == null) {
-                        withContext(Dispatchers.IO) {
-                            Log.i("kvrntvjrjh", "getWeather if null start: $address")
-                            val gcd = geocoder.getFromLocation(
-                                result.data.lat.toDouble(),
-                                result.data.lon.toDouble(),
-                                1
-                            )
-                            Log.i(TAG, "getWeather gcd: $gcd")
-
-                            if (gcd != null && gcd.size > 0)
-                                address = gcd[0]
-                            Log.i("kvrntvjrjh", "getWeather if null end: $address")
-                        }
-                    } else {
-                        Log.i("kvrntvjrjh", "getWeather else null start: $address")
+//                while (true) {
+//                    Log.i("kvrntvjrjh", "getWeather while: $address")
+//                    if (address == null) {
+//                        withContext(Dispatchers.IO) {
+//                            Log.i("kvrntvjrjh", "getWeather if null start: $address")
+//                            val gcd = geocoder.getFromLocation(
+//                                result.data.lat.toDouble(),
+//                                result.data.lon.toDouble(),
+//                                1
+//                            )
+//                            Log.i(TAG, "getWeather gcd: $gcd")
+//
+//                            if (gcd != null && gcd.size > 0)
+//                                address = gcd[0]
+//                            Log.i("kvrntvjrjh", "getWeather if null end: $address")
+//                        }
+//                    } else {
+//                        Log.i("kvrntvjrjh", "getWeather else null start: $address")
                         lastDateTv.text = getDateTime(current.dt.toString())
                         cityTv.text =
-                            (address!!.locality ?: address!!.getAddressLine(0).split(',')[0])
-                                ?: result.data.timezone
+//                            (address!!.locality ?: address!!.getAddressLine(0).split(',')[0])
+                                 result.data.timezone.split('/')[1]
                         tempTv.text = (current.temp).toInt().toString() + tempSymbol
                         weatherDescriptionTv.text = current.weather[0].description
                         Glide.with(requireContext())
@@ -377,11 +379,11 @@ class HomeFragment : Fragment() {
                                 )
                     }
                     hideNoLocationViews()
-                    Log.i("kvrntvjrjh", "getWeather else null end: $address ")
-                    break
-                }
+//                    Log.i("kvrntvjrjh", "getWeather else null end: $address ")
+//                    break
+//                }
 
-            }
+//            }
 
         }
     }
@@ -416,7 +418,7 @@ class HomeFragment : Fragment() {
     private fun fetchingData() {
         var llong = arguments?.let { HomeFragmentArgs.fromBundle(it).mapLatLon }
 
-        if (locationSettings == Constants.MAP && llong == null) {
+        if (locationSettings == Constants.MAP && llong == null && isOnline(requireContext())) {
             val action: ActionHomeFragmentToMapsFragment =
                 HomeFragmentDirections.actionHomeFragmentToMapsFragment()
             Navigation.findNavController(requireView()).navigate(action)
@@ -430,6 +432,10 @@ class HomeFragment : Fragment() {
 
             requireArguments().clear()
 
+            editor.putString("latLong", llong)
+            editor.apply()
+            val s = sharedPreferences.getString("latLong", "0.0,0.0")
+            Log.i("vkrjgnvrg", "fetchingData: $s")
             viewModel.getOnlineWeather(
                 latitude.toString(),
                 longitude.toString(),
@@ -522,6 +528,11 @@ class HomeFragment : Fragment() {
                     "latttttttt, longgggggggggg second: $latitude, $longitude"
                 )
                 Log.i("kvrntvjrjh", "latttttttt, longgggggggggg second: $units")
+
+                editor.putString("latLong", "$latitude,$longitude")
+                editor.apply()
+                val s = sharedPreferences.getString("latLong", "0.0,0.0")
+                Log.i("vkrjgnvrg", "fetchingData: $s")
                 viewModel.getOnlineWeather(
                     latitude.toString(),
                     longitude.toString(),
@@ -530,8 +541,8 @@ class HomeFragment : Fragment() {
                 )
                 binding.progressBar.visibility = View.INVISIBLE
             } else {
-                Snackbar.make(binding.layout, "no internet", Snackbar.ANIMATION_MODE_SLIDE)
-                    .show()
+                makeNoNetworkConnectionSnackbar()
+                noInternetSnackbar.show()
             }
 
 

@@ -35,6 +35,7 @@ import com.fadalyis.weatherforecastapplication.utils.Constants
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +74,7 @@ class AlertFragment : Fragment(), OnAlertClickListener {
     ): View? {
         // Inflate the layout for this fragment
         workManager = WorkManager.getInstance(requireActivity().applicationContext)
-        fullFormat = SimpleDateFormat("dd MMM, yyyy HH:mm")
+        fullFormat = SimpleDateFormat("dd MMM, yyyy hh:mm a")
         binding = FragmentAlertBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -139,7 +140,7 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         var myCalendar = Calendar.getInstance()
         var calendarDate = myCalendar.time
         val dayFormatter = SimpleDateFormat("dd MMM, yyyy ")
-        val timeFormatter = SimpleDateFormat("HH:mm")
+        val timeFormatter = SimpleDateFormat("hh:mm a")
         startDay.text = dayFormatter.format(calendarDate)
         startTime.text = timeFormatter.format(calendarDate)
 
@@ -266,7 +267,16 @@ class AlertFragment : Fragment(), OnAlertClickListener {
             .build()
         timePicker.show(requireActivity().supportFragmentManager, "TimePicker")
         timePicker.addOnPositiveButtonClickListener {
-            textView.text = "${timePicker.hour}:${timePicker.minute}"
+            var hours:String = "1"
+            var period = "AM"
+             if(timePicker.hour >12){
+                 hours = (timePicker.hour-12).toString()
+                 period = "PM"
+             } else {
+                 hours = (timePicker.hour).toString()
+                 period = "AM"
+             }
+            textView.text = "$hours:${timePicker.minute} $period"
 
             if (label == "start") {
                 fullStartDate =
@@ -314,8 +324,14 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         .addTag(Constants.WeatherFetchingWorker_TAG)
         .setInputData(
             workDataOf(
-                "alertType" to alertType
+                "alertType" to alertType,
+                "endDate" to fullEndDate.time
             )
+        )
+        .setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.METERED)
+                .build()
         )
         .setInitialDelay(
             fullStartDate.time - Calendar.getInstance().timeInMillis,

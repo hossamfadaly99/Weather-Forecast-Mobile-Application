@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.ItemAlertBinding
@@ -44,7 +45,7 @@ class AlertAdapter(var alertList: List<AlertSchedule>, var onAlertClickListener:
                 MaterialAlertDialogBuilder(context)
                     .setTitle(context.getString(R.string.delete_alert))
                     .setMessage(context.getString(R.string.delete_alert_message))
-                    .setNeutralButton(context.getString(R.string.cancel)) { dialog, which ->
+                    .setNegativeButton(context.getString(R.string.cancel)) { dialog, which ->
 
                     }
                     .setPositiveButton(context.getString(R.string.delete)) { dialog, which ->

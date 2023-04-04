@@ -30,6 +30,7 @@ import com.fadalyis.weatherforecastapplication.utils.Constants
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class WeatherFetchingWorker(
     private var context: Context,
@@ -39,14 +40,36 @@ class WeatherFetchingWorker(
         try {
             val inputData = inputData
             val alertType = inputData.getString("alertType")
+            val endDate = inputData.getLong("endDate", 1L)
 
             //get endDate and id from input data and check then cancel
             //WorkManager.getInstance(context).cancelWorkById()
 
+            val sharedPreferences = context.getSharedPreferences(
+                Constants.SETTING_SHARED_PREF,
+                Context.MODE_PRIVATE
+            )
+            val isNotificationOn = sharedPreferences.getBoolean(Constants.NOTIFICATIONS, true)
+            if (!isNotificationOn){
+                Log.i("Alerts_Fragment_TAG", "doWork: faileddd")
+                return Result.failure()
+            }
+
+            val isFinished =  endDate < Calendar.getInstance().timeInMillis
+            if (isFinished){
+                Log.i("Alerts_Fragment_TAG", "doWork: finished")
+                WorkManager.getInstance(context).cancelWorkById(id)
+                return Result.success()
+            }
+
+            val latLong = sharedPreferences.getString("latLong", "1.0,0.0")?.split(',')
+
             val apiInstance = RetrofitHelper.getInstance().create(CurrentWeatherService::class.java)
 
+            //33.0767125 -113.0157329 Painted Rock Dam us
             val result =
-                apiInstance.getCurrentWeather("33.0767125", "-113.0157329", "en", "standard")
+                apiInstance.getCurrentWeather(latLong?.get(0)!!, latLong[1], "en", "standard")
+            Log.i("vkrjgnvrg", "doWork: ${latLong.get(0)}   ,  ${latLong[1]}")
             if (result.isSuccessful) {
 
                 var firstWeatherCondition = ""
@@ -59,18 +82,25 @@ class WeatherFetchingWorker(
                     firstWeatherCondition = "Today is fine don't worry"
                 }
 
-                if (alertType == "Alarm") {
-                    createAlarm(context, firstWeatherCondition)
-                } else {
-                    createNotification(context, firstWeatherCondition)
-                }
+
+                startChosenAlert(alertType, firstWeatherCondition)
                 return Result.success()
             } else
                 return Result.failure(workDataOf(Constants.FAILURE_REASON to result.errorBody()))
         } catch (e: Exception) {
             return Result.failure(workDataOf(Constants.FAILURE_REASON to e.message))
         }
+    }
 
+    private suspend fun WeatherFetchingWorker.startChosenAlert(
+        alertType: String?,
+        firstWeatherCondition: String
+    ) {
+        if (alertType == "Alarm") {
+            createAlarm(context, firstWeatherCondition)
+        } else {
+            createNotification(context, firstWeatherCondition)
+        }
     }
 
     private suspend fun createAlarm(context: Context, contentText: String) {

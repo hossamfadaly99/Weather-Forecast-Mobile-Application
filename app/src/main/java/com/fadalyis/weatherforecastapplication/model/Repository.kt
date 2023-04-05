@@ -1,27 +1,32 @@
 package com.fadalyis.weatherforecastapplication.model
 
-import android.location.Address
 import android.util.Log
 import com.fadalyis.weatherforecastapplication.db.LocalSource
 import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.RemoteSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import java.util.*
+import kotlinx.coroutines.withContext
 
 
 class Repository private constructor(
     var remoteSource: RemoteSource,
-    var localSource: LocalSource
+    var localSource: LocalSource,
+    var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RepositoryInterface {
     companion object {
         private var instance: Repository? = null
-        fun getInstance(remoteSource: RemoteSource, localSource: LocalSource): Repository {
+        fun getInstance(
+            remoteSource: RemoteSource,
+            localSource: LocalSource,
+            ioDispatcher: CoroutineDispatcher
+        ): Repository {
             return instance ?: synchronized(this) {
                 val temp = Repository(
-                    remoteSource, localSource
+                    remoteSource, localSource, ioDispatcher
                 )
                 instance = temp
                 temp
@@ -34,15 +39,20 @@ class Repository private constructor(
         lon: String,
         lang: String,
         units: String
-    ){
+    ) {
+
         val response = remoteSource.getCurrentWeatherOnline(lat, lon, lang, units)
         Log.i("iecrhje", "getCurrentWeatherOnline: ${response.lat}")
-        localSource.insertCurrentWeather(response)
+        withContext(ioDispatcher) {
+            localSource.insertCurrentWeather(response)
+        }
     }
 
 
     override suspend fun insertCurrentWeather(weatherResponse: CurrentResponse) {
-        localSource.insertCurrentWeather(weatherResponse)
+        withContext(ioDispatcher) {
+            localSource.insertCurrentWeather(weatherResponse)
+        }
     }
 
     override suspend fun getCurrentWeatherOffline(): Flow<CurrentResponse?> {
@@ -50,26 +60,34 @@ class Repository private constructor(
     }
 
     override suspend fun insertFavLocation(address: FavAddress) {
-        localSource.insertFavLocation(address)
+        withContext(ioDispatcher) {
+            localSource.insertFavLocation(address)
+        }
     }
 
     override suspend fun deleteFavLocation(address: FavAddress) {
-        localSource.deleteFavLocation(address)
+        withContext(ioDispatcher) {
+            localSource.deleteFavLocation(address)
+        }
     }
 
     override suspend fun getFavLocations(): Flow<List<FavAddress>> {
-        return  localSource.getFavLocations()
+        return localSource.getFavLocations()
     }
 
     override suspend fun getAlerts(): Flow<List<AlertSchedule>> {
-        return localSource.getFAlerts()
+        return localSource.getAlerts()
     }
 
     override suspend fun insertAlert(alert: AlertSchedule) {
-        localSource.insertAlert(alert)
+        withContext(ioDispatcher) {
+            localSource.insertAlert(alert)
+        }
     }
 
     override suspend fun deleteAlert(id: String) {
-        localSource.deleteAlert(id)
+        withContext(ioDispatcher) {
+            localSource.deleteAlert(id)
+        }
     }
 }

@@ -1,9 +1,8 @@
-package com.fadalyis.weatherforecastapplication.favorite
+package com.fadalyis.weatherforecastapplication.favorite.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fadalyis.weatherforecastapplication.Home.TAG
 import com.fadalyis.weatherforecastapplication.model.RepositoryInterface
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.FavApiState
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
+private const val TAG = "FavoriteViewModel"
 class FavoriteViewModel (private val _repoInterface: RepositoryInterface) : ViewModel() {
     private var _location: MutableStateFlow<FavApiState> =
         MutableStateFlow(FavApiState.Loading)
@@ -29,7 +29,7 @@ class FavoriteViewModel (private val _repoInterface: RepositoryInterface) : View
                 _location.value = FavApiState.Failure(it)
             }
             .collect {
-                Log.i(TAG, "getSavedWeather: collect ")
+//                Log.i(TAG, "getSavedWeather: collect ")
                 if (it != null)
                     _location.value = FavApiState.Success(it)
                 else {

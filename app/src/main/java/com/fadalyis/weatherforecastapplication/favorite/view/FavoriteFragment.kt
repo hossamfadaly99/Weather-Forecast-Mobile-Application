@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.favorite
+package com.fadalyis.weatherforecastapplication.favorite.view
 
 import android.content.Context
 import android.content.Intent
@@ -19,7 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentFavoriteBinding
 import com.fadalyis.weatherforecastapplication.db.*
-import com.fadalyis.weatherforecastapplication.favorite.FavoriteFragmentDirections.ActionFavoriteFragmentToHomeFragment
+import com.fadalyis.weatherforecastapplication.favorite.viewmodel.FavoriteViewModel
+import com.fadalyis.weatherforecastapplication.favorite.viewmodel.FavoriteViewModelFactory
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
@@ -30,8 +31,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-const val TAG = "FavoriteFragmentTag"
-
+private const val TAG = "FavoriteFragmentTag"
 class FavoriteFragment : Fragment(), OnAddressClickListener {
 
     lateinit var binding: FragmentFavoriteBinding
@@ -39,6 +39,7 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
     private lateinit var viewModelFactory: FavoriteViewModelFactory
     private lateinit var mFavoriteAdapter: FavoriteAdapter
     private lateinit var mLayoutManager: LinearLayoutManager
+    private lateinit var noInternetSnackbar: Snackbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,31 +55,31 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
 
         initViewModel()
 
-
         setupFavoriteRecyclerView()
 
         observeLocationState()
 
         binding.floatingActionButton.setOnClickListener {
             //TODO if no network
-            if (!isOnline(requireContext())){
-//                val noInternetSnackbar = Snackbar.make(
-//                    binding.coordinator,
-//                    getString(R.string.no_internet_connection),
-//                    Snackbar.LENGTH_INDEFINITE
-//                )
-//                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE)
-//                    .setAction(R.string.settings) {
-//                        val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
-//                        startActivity(intent)
-//                        noInternetSnackbar.dismiss()
-//                    }
-            }
-            Navigation.findNavController(view)
-                .navigate(R.id.action_favoriteFragment_to_mapsFragment)
+            if (!isOnline(requireContext())) {
+                noInternetSnackbar = Snackbar.make(
+                    binding.coordinator,
+                    getString(R.string.no_internet_connection),
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE)
+                    .setAction(R.string.settings) {
+                        val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                        startActivity(intent)
+                        noInternetSnackbar.dismiss()
+                    }
+                noInternetSnackbar.show()
+            } else {
+                Navigation.findNavController(view)
+                    .navigate(R.id.action_favoriteFragment_to_mapsFragment)
 //            val a: ActionF = FavoriteFragmentDirections.actionFavoriteFragmentToMapsFragment()
+            }
         }
-
     }
 
     private fun setupFavoriteRecyclerView() {
@@ -91,7 +92,7 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
     }
 
     private fun observeLocationState() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             viewModel.location.collectLatest { result ->
                 when (result) {
                     is FavApiState.Success -> {
@@ -144,7 +145,8 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
         viewModelFactory = FavoriteViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao),
+                Dispatchers.IO
             )
         )
 
@@ -160,7 +162,7 @@ class FavoriteFragment : Fragment(), OnAddressClickListener {
     }
 
     override fun viewWeatherData(mapLatLon: String) {
-        val action: ActionFavoriteFragmentToHomeFragment = FavoriteFragmentDirections.actionFavoriteFragmentToHomeFragment()
+        val action: FavoriteFragmentDirections.ActionFavoriteFragmentToHomeFragment = FavoriteFragmentDirections.actionFavoriteFragmentToHomeFragment()
         action.mapLatLon = mapLatLon
         Navigation.findNavController(requireView()).navigate(action)
     }

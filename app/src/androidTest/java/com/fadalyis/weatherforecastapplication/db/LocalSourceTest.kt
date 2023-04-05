@@ -61,9 +61,9 @@ class LocalSourceTest {
 
 
     @Test
-    fun insertCurrentWeather()= runBlockingTest {
+    fun insertCurrentWeather_weatherResponse_returnNotNull()= runBlockingTest {
         launch {
-            database.getWeatherDao().getCurrentWeather().collect{
+            localSource.getCurrentWeather().collect{
                 TestCase.assertNull(it)
                 cancel()
             }
@@ -72,7 +72,7 @@ class LocalSourceTest {
 
         //When
         launch {
-            database.getWeatherDao().getCurrentWeather().collect{
+            localSource.getCurrentWeather().collect{
                 MatcherAssert.assertThat(it, CoreMatchers.`is`(CoreMatchers.notNullValue()))
                 cancel()
             }
@@ -80,18 +80,18 @@ class LocalSourceTest {
 
     }
     @Test
-    fun getCurrentWeather_returnNotNull()= runBlockingTest {
-        database.getWeatherDao().insertCurrentWeather(weather)
+    fun getCurrentWeather_weatherResponse_returnNotNull()= runBlockingTest {
+        localSource.insertCurrentWeather(weather)
         launch {
-            database.getWeatherDao().getCurrentWeather().collect {
+            localSource.getCurrentWeather().collect {
                 MatcherAssert.assertThat(it, CoreMatchers.`is`(CoreMatchers.notNullValue()))
                 cancel()
             }
         }
     }
     @Test
-    fun deleteCurrentWeather_returnNull()= runBlockingTest {
-        database.getWeatherDao().insertCurrentWeather(weather)
+    fun deleteCurrentWeather_weatherResponse_returnNullAfterInsertAndDelete()= runBlockingTest {
+        localSource.insertCurrentWeather(weather)
         database.getWeatherDao().deletePreviousWeather()
         launch {
             database.getWeatherDao().getCurrentWeather().collect {
@@ -102,18 +102,18 @@ class LocalSourceTest {
     }
 
     @Test
-    fun insertFavLocation()= runBlockingTest {
+    fun insertFavLocation_favAddress_returnSizeOne()= runBlockingTest {
         launch {
-            database.getFavoriteDao().getFavLocations().collect{
+            localSource.getFavLocations().collect{
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(0) )
                 cancel()
             }
         }
-        database.getFavoriteDao().insertLocation(favLocation)
+        localSource.insertFavLocation(favLocation)
 
         //When
         launch {
-            database.getFavoriteDao().getFavLocations().collect{
+            localSource.getFavLocations().collect{
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(1) )
                 cancel()
             }
@@ -121,21 +121,21 @@ class LocalSourceTest {
 
     }
     @Test
-    fun getFavLocation_returnNotNull()= runBlockingTest {
-        database.getFavoriteDao().insertLocation(favLocation)
+    fun getFavLocation_favAddress_returnNotNull()= runBlockingTest {
+        localSource.insertFavLocation(favLocation)
         launch {
-            database.getFavoriteDao().getFavLocations().collect {
+            localSource.getFavLocations().collect {
                 MatcherAssert.assertThat(it, CoreMatchers.`is`(CoreMatchers.notNullValue()))
                 cancel()
             }
         }
     }
     @Test
-    fun deleteFavLocation_returnNull()= runBlockingTest {
-        database.getFavoriteDao().insertLocation(favLocation)
-        database.getFavoriteDao().deleteLocation(favLocation)
+    fun deleteFavLocation_favLocation_returnSizeZero()= runBlockingTest {
+        localSource.insertFavLocation(favLocation)
+        localSource.deleteFavLocation(favLocation)
         launch {
-            database.getFavoriteDao().getFavLocations().collect {
+            localSource.getFavLocations().collect {
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(0) )
                 cancel()
             }
@@ -143,18 +143,18 @@ class LocalSourceTest {
     }
 
     @Test
-    fun insertAlert()= runBlockingTest {
+    fun insertAlert_alert_returnSizeOne()= runBlockingTest {
         launch {
-            database.getAlertDao().getAlerts().collect{
+            localSource.getAlerts().collect{
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(0) )
                 cancel()
             }
         }
-        database.getAlertDao().insertAlert(alert)
+        localSource.insertAlert(alert)
 
         //When
         launch {
-            database.getAlertDao().getAlerts().collect{
+            localSource.getAlerts().collect{
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(1) )
                 cancel()
             }
@@ -162,21 +162,21 @@ class LocalSourceTest {
 
     }
     @Test
-    fun getAlert_returnNotNull()= runBlockingTest {
-        database.getAlertDao().insertAlert(alert)
+    fun getAlert_alert_returnNotNullAfterInsert()= runBlockingTest {
+        localSource.insertAlert(alert)
         launch {
-            database.getFavoriteDao().getFavLocations().collect {
+            localSource.getFavLocations().collect {
                 MatcherAssert.assertThat(it, CoreMatchers.`is`(CoreMatchers.notNullValue()))
                 cancel()
             }
         }
     }
     @Test
-    fun deleteAlert_returnNull()= runBlockingTest {
-        database.getAlertDao().insertAlert(alert)
-        database.getAlertDao().deleteAlert(alert.id)
+    fun deleteAlert_alert_returnSizeZero()= runBlockingTest {
+        localSource.insertAlert(alert)
+        localSource.deleteAlert(alert.id)
         launch {
-            database.getAlertDao().getAlerts().collect {
+            localSource.getAlerts().collect {
                 MatcherAssert.assertThat(it.size, CoreMatchers.`is`(0) )
                 cancel()
             }

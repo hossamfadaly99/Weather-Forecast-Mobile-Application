@@ -11,7 +11,7 @@
         android:title="@string/favorite" />
     <item
         android:id="@+id/alertFragment"
-        android:icon="@drawable/alert_icon"
+        android:icon="@drawable/notifications_icon"
         android:title="@string/alerts" />
     <item
         android:id="@+id/settingFragment"

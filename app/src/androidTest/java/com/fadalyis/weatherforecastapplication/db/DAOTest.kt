@@ -60,7 +60,7 @@ class DAOTest{
 
 
     @Test
-    fun insertCurrentWeather()= runBlockingTest {
+    fun insertCurrentWeather_weatherResponse_returnNotNull()= runBlockingTest {
         launch {
             database.getWeatherDao().getCurrentWeather().collect{
                 assertNull(it)
@@ -79,7 +79,7 @@ class DAOTest{
 
     }
     @Test
-    fun getCurrentWeather_returnNotNull()= runBlockingTest {
+    fun getCurrentWeather_weatherResponse_returnNotNull()= runBlockingTest {
         database.getWeatherDao().insertCurrentWeather(weather)
         launch {
             database.getWeatherDao().getCurrentWeather().collect {
@@ -89,7 +89,7 @@ class DAOTest{
         }
     }
     @Test
-    fun deleteCurrentWeather_returnNull()= runBlockingTest {
+    fun deleteCurrentWeather_weatherResponse_returnNullAfterInsertAndDelete()= runBlockingTest {
         database.getWeatherDao().insertCurrentWeather(weather)
         database.getWeatherDao().deletePreviousWeather()
         launch {
@@ -101,7 +101,7 @@ class DAOTest{
     }
 
     @Test
-    fun insertFavLocation()= runBlockingTest {
+    fun insertFavLocation_favAddress_returnSizeOne()= runBlockingTest {
         launch {
             database.getFavoriteDao().getFavLocations().collect{
                 assertThat(it.size,`is`(0) )
@@ -120,7 +120,7 @@ class DAOTest{
 
     }
     @Test
-    fun getFavLocation_returnNotNull()= runBlockingTest {
+    fun getFavLocation_favAddress_returnNotNull()= runBlockingTest {
         database.getFavoriteDao().insertLocation(favLocation)
         launch {
             database.getFavoriteDao().getFavLocations().collect {
@@ -130,12 +130,12 @@ class DAOTest{
         }
     }
     @Test
-    fun deleteFavLocation_returnNull()= runBlockingTest {
+    fun deleteFavLocation_favLocation_returnSizeZero()= runBlockingTest {
         database.getFavoriteDao().insertLocation(favLocation)
         database.getFavoriteDao().deleteLocation(favLocation)
         launch {
             database.getFavoriteDao().getFavLocations().collect {
-                assertThat(it.size,`is`(0) )
+                assertThat(it.size,`is`(0))
                 cancel()
             }
         }
@@ -143,7 +143,7 @@ class DAOTest{
 
 
     @Test
-    fun insertAlert()= runBlockingTest {
+    fun insertAlert_alert_returnSizeOne()= runBlockingTest {
         launch {
             database.getAlertDao().getAlerts().collect{
                 assertThat(it.size,`is`(0) )
@@ -162,7 +162,7 @@ class DAOTest{
 
     }
     @Test
-    fun getAlert_returnNotNull()= runBlockingTest {
+    fun getAlert_alert_returnNotNullAfterInsert()= runBlockingTest {
         database.getAlertDao().insertAlert(alert)
         launch {
             database.getFavoriteDao().getFavLocations().collect {
@@ -172,7 +172,7 @@ class DAOTest{
         }
     }
     @Test
-    fun deleteAlert_returnNull()= runBlockingTest {
+    fun deleteAlert_alert_returnSizeZero()= runBlockingTest {
         database.getAlertDao().insertAlert(alert)
         database.getAlertDao().deleteAlert(alert.id)
         launch {

@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.favorite
+package com.fadalyis.weatherforecastapplication.favorite.view
 
 import android.view.View
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress

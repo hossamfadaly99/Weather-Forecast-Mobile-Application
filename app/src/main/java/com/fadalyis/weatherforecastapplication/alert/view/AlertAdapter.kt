@@ -1,10 +1,8 @@
-package com.fadalyis.weatherforecastapplication.alert
+package com.fadalyis.weatherforecastapplication.alert.view
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.ItemAlertBinding
@@ -37,7 +35,7 @@ class AlertAdapter(var alertList: List<AlertSchedule>, var onAlertClickListener:
 
         holder.binding.apply {
 
-            alarmTypeTv.text = currentAlert.type
+            alarmTypeTv.text = if(currentAlert.type == "Alarm") context.getString(R.string.alarm) else context.getString(R.string.notification)
             fromDateTv.text = getDateFromTimeStamp(currentAlert.startDate)
             toDateTv.text = getDateFromTimeStamp(currentAlert.endDate)
 

@@ -1,14 +1,10 @@
 package com.fadalyis.weatherforecastapplication.db
 
 
-import android.content.Context
-import android.location.Address
 import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
 import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import java.util.*
 
 class ConcreteLocalSource(
     var weatherDao: WeatherDAO,
@@ -45,7 +41,7 @@ class ConcreteLocalSource(
         alertDao.deleteAlert(id)
     }
 
-    override suspend fun getFAlerts(): Flow<List<AlertSchedule>> {
+    override suspend fun getAlerts(): Flow<List<AlertSchedule>> {
         return alertDao.getAlerts()
     }
 

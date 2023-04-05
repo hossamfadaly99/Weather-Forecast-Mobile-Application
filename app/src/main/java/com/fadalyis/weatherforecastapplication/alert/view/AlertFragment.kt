@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.alert
+package com.fadalyis.weatherforecastapplication.alert.view
 
 import android.content.Intent
 import android.os.Build
@@ -24,9 +24,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.fadalyis.weatherforecastapplication.R
+import com.fadalyis.weatherforecastapplication.alert.viewmodel.AlertViewModel
+import com.fadalyis.weatherforecastapplication.alert.viewmodel.AlertViewModelFactory
+import com.fadalyis.weatherforecastapplication.alert.WeatherFetchingWorker
 import com.fadalyis.weatherforecastapplication.databinding.FragmentAlertBinding
 import com.fadalyis.weatherforecastapplication.db.*
-import com.fadalyis.weatherforecastapplication.favorite.TAG
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
 import com.fadalyis.weatherforecastapplication.network.AlertApiState
@@ -35,7 +37,6 @@ import com.fadalyis.weatherforecastapplication.utils.Constants
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+private const val TAG = "AlertFragment"
 class AlertFragment : Fragment(), OnAlertClickListener {
     lateinit var binding: FragmentAlertBinding
     lateinit var viewModel: AlertViewModel
@@ -184,7 +186,7 @@ class AlertFragment : Fragment(), OnAlertClickListener {
     }
 
     private fun observeAlertState() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             viewModel.alert.collectLatest { result ->
                 when (result) {
                     is AlertApiState.Success -> {
@@ -242,7 +244,8 @@ class AlertFragment : Fragment(), OnAlertClickListener {
         viewModelFactory = AlertViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao),
+                Dispatchers.IO
             )
         )
 

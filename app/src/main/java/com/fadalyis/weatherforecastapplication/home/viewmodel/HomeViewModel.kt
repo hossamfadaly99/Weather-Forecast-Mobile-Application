@@ -1,19 +1,16 @@
-package com.fadalyis.weatherforecastapplication.Home
+package com.fadalyis.weatherforecastapplication.home.viewmodel
 
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadalyis.weatherforecastapplication.model.RepositoryInterface
-import com.fadalyis.weatherforecastapplication.model.pojo.CurrentResponse
 import com.fadalyis.weatherforecastapplication.network.ApiState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+private const val TAG = "HomeViewModel"
 class HomeViewModel(private val _repoInterface: RepositoryInterface) : ViewModel() {
     private var _weather: MutableStateFlow<ApiState> =
         MutableStateFlow(ApiState.Loading)

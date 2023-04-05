@@ -54,4 +54,11 @@
     <string name="notification">Notification</string>
     <string name="alarm">Alarm</string>
     <string name="no_internet_connection">No internet connection!</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="save">Save</string>
+    <string name="weather_condition">Weather Condition</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="from_">From:</string>
+    <string name="to_">To:</string>
 </resources>

@@ -15,8 +15,8 @@
     <string name="cloud">نسبة السحاب</string>
     <string name="pressure">الضغط</string>
     <string name="_7_day_forecast">النشرة الإسبوعية</string>
-    <string name="h">العظمي</string>
-    <string name="l">الصغرى</string>
+    <string name="h">العظمي:</string>
+    <string name="l">، الصغرى:</string>
     <string name="last_update">اخر تحديث:</string>
     <string name="today">اليوم</string>
     <string name="now">الآن</string>
@@ -53,4 +53,11 @@
     <string name="no_locations_added_yet">لا يوجد مواقع محفوظة حتى الان</string>
     <string name="no_alerts_added_yet">لا يوجد إنذارات حتى الان</string>
     <string name="no_internet_connection">لا يوجد اتصال بالإنترنت!</string>
+    <string name="from">من</string>
+    <string name="to">إلى</string>
+    <string name="save">حفظ</string>
+    <string name="weather_condition">حالة الطقس</string>
+    <string name="dismiss">إغلاق</string>
+    <string name="from_">من:</string>
+    <string name="to_">إلى:</string>
 </resources>

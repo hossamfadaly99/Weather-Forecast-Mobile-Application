@@ -15,12 +15,11 @@ import android.widget.EditText
 import android.widget.ImageButton
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import com.example.navigationcomponent.MapsFragmentDirections.ActionMapsFragmentToHomeFragment
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.db.*
-import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModel
-import com.fadalyis.weatherforecastapplication.favorite.FavoriteViewModelFactory
+import com.fadalyis.weatherforecastapplication.favorite.viewmodel.FavoriteViewModel
+import com.fadalyis.weatherforecastapplication.favorite.viewmodel.FavoriteViewModelFactory
 import com.fadalyis.weatherforecastapplication.model.Repository
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
 import com.fadalyis.weatherforecastapplication.network.CurrentWeatherClient
@@ -31,9 +30,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.Dispatchers
 import java.util.*
 
-const val TAG = "MapsFragment"
+private const val TAG = "MapsFragment"
 class MapsFragment : Fragment() {
     lateinit var imgBtn: ImageButton
     lateinit var confirmLocationBtn: Button
@@ -177,7 +177,8 @@ class MapsFragment : Fragment() {
         viewModelFactory = FavoriteViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao),
+                Dispatchers.IO
             )
         )
 

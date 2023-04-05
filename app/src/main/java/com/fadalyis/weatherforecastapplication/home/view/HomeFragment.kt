@@ -1,11 +1,10 @@
-package com.fadalyis.weatherforecastapplication.Home
+package com.fadalyis.weatherforecastapplication.home.view
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -28,7 +27,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.fadalyis.weatherforecastapplication.Home.HomeFragmentDirections.ActionHomeFragmentToMapsFragment
+import com.fadalyis.weatherforecastapplication.home.viewmodel.HomeViewModel
+import com.fadalyis.weatherforecastapplication.home.viewmodel.HomeViewModelFactory
 import com.fadalyis.weatherforecastapplication.R
 import com.fadalyis.weatherforecastapplication.databinding.FragmentHomeBinding
 import com.fadalyis.weatherforecastapplication.db.*
@@ -46,9 +46,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 
-const val PERMISSION_ID = 5055
-const val TAG = "HOME_FRAGMENT_TAG"
-
+private const val PERMISSION_ID = 5055
+private const val TAG = "HOME_FRAGMENT_TAG"
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
@@ -193,7 +192,7 @@ class HomeFragment : Fragment() {
             noInternetSnackbar.show()
         }
         Log.i(TAG, "enhancedRefreshWeather: ")
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch (Dispatchers.IO){
             withContext(Dispatchers.Main) {
                 if (checkPermissions()) {
                     if (isLocationEnabled()) {
@@ -241,7 +240,7 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun observeWeatherData() {
-        viewModel.weather.collectLatest { result ->
+        viewModel.weather.collectLatest() { result ->
             Log.i(TAG, "onViewCreated: collectLatest")
             mFusedLocationClient.removeLocationUpdates(mLocationCallback)
             when (result) {
@@ -411,7 +410,8 @@ class HomeFragment : Fragment() {
         viewModelFactory = HomeViewModelFactory(
             Repository.getInstance(
                 CurrentWeatherClient.getInstance(),
-                ConcreteLocalSource(weatherDao, favoriteDao, alertDao)
+                ConcreteLocalSource(weatherDao, favoriteDao, alertDao),
+                Dispatchers.IO
             )
         )
 
@@ -432,7 +432,7 @@ class HomeFragment : Fragment() {
         var llong = arguments?.let { HomeFragmentArgs.fromBundle(it).mapLatLon }
 
         if (locationSettings == Constants.MAP && llong == null && isOnline(requireContext())) {
-            val action: ActionHomeFragmentToMapsFragment =
+            val action: HomeFragmentDirections.ActionHomeFragmentToMapsFragment =
                 HomeFragmentDirections.actionHomeFragmentToMapsFragment()
             Navigation.findNavController(requireView()).navigate(action)
         }
@@ -460,7 +460,7 @@ class HomeFragment : Fragment() {
         }
 
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             observeWeatherData()
         }
     }

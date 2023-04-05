@@ -16,6 +16,6 @@ interface LocalSource {
     suspend fun getFavLocations(): Flow<List<FavAddress>>
     suspend fun insertAlert(alert: AlertSchedule)
     suspend fun deleteAlert(id: String)
-    suspend fun getFAlerts(): Flow<List<AlertSchedule>>
+    suspend fun getAlerts(): Flow<List<AlertSchedule>>
 
 }

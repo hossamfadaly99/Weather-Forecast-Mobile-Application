@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.Home
+package com.fadalyis.weatherforecastapplication.home.view
 
 import android.content.Context
 import android.util.Log

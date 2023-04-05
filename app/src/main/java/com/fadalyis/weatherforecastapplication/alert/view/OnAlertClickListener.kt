@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.alert
+package com.fadalyis.weatherforecastapplication.alert.view
 
 import android.view.View
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress

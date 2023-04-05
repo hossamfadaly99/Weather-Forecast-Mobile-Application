@@ -1,4 +1,4 @@
-package com.fadalyis.weatherforecastapplication.Home
+package com.fadalyis.weatherforecastapplication.home.viewmodel
 
 
 import androidx.lifecycle.ViewModel

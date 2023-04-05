@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.fadalyis.weatherforecastapplication.Home.HomeFragment"
+        android:name="com.fadalyis.weatherforecastapplication.home.view.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <argument
@@ -17,7 +17,8 @@
             android:defaultValue="@null" />
         <action
             android:id="@+id/action_homeFragment_to_mapsFragment"
-            app:destination="@id/mapsFragment" >
+            app:destination="@id/mapsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim">
             <argument
                 android:name="previousDestination"
                 android:defaultValue="home" />
@@ -25,7 +26,7 @@
     </fragment>
     <fragment
         android:id="@+id/favoriteFragment"
-        android:name="com.fadalyis.weatherforecastapplication.favorite.FavoriteFragment"
+        android:name="com.fadalyis.weatherforecastapplication.favorite.view.FavoriteFragment"
         android:label="fragment_favorite"
         tools:layout="@layout/fragment_favorite" >
         <action
@@ -45,7 +46,7 @@
     </fragment>
     <fragment
         android:id="@+id/alertFragment"
-        android:name="com.fadalyis.weatherforecastapplication.alert.AlertFragment"
+        android:name="com.fadalyis.weatherforecastapplication.alert.view.AlertFragment"
         android:label="fragment_alert"
         tools:layout="@layout/fragment_alert" />
     <fragment

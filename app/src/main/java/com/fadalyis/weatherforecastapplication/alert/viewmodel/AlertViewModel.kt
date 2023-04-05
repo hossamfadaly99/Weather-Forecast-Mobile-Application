@@ -1,9 +1,8 @@
-package com.fadalyis.weatherforecastapplication.alert
+package com.fadalyis.weatherforecastapplication.alert.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fadalyis.weatherforecastapplication.Home.TAG
 import com.fadalyis.weatherforecastapplication.model.RepositoryInterface
 import com.fadalyis.weatherforecastapplication.model.pojo.AlertSchedule
 import com.fadalyis.weatherforecastapplication.model.pojo.FavAddress
@@ -16,7 +15,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-
+private const val TAG = "AlertViewModel"
 class AlertViewModel (private val _repoInterface: RepositoryInterface) : ViewModel() {
     private var _alert: MutableStateFlow<AlertApiState> =
         MutableStateFlow(AlertApiState.Loading)
@@ -27,14 +26,14 @@ class AlertViewModel (private val _repoInterface: RepositoryInterface) : ViewMod
         getSavedAlert()
     }
 
-    private fun getSavedAlert() = viewModelScope.launch {
+    fun getSavedAlert() = viewModelScope.launch {
         _repoInterface.getAlerts()
             .catch {
                 Log.i(TAG, "getSavedWeather: catch")
                 _alert.value = AlertApiState.Failure(it)
             }
             .collect {
-                Log.i(TAG, "getSavedWeather: collect ")
+//                Log.i(TAG, "getSavedWeather: collect ")
                 if (it != null)
                     _alert.value = AlertApiState.Success(it)
                 else {
@@ -43,11 +42,11 @@ class AlertViewModel (private val _repoInterface: RepositoryInterface) : ViewMod
             }
     }
 
-    fun saveAlert(alert: AlertSchedule) = viewModelScope.launch(Dispatchers.IO){
+    fun saveAlert(alert: AlertSchedule) = viewModelScope.launch{
         _repoInterface.insertAlert(alert)
     }
 
-    fun deleteAlert(id: String) = viewModelScope.launch(Dispatchers.IO){
+    fun deleteAlert(id: String) = viewModelScope.launch{
         _repoInterface.deleteAlert(id)
     }
 }
